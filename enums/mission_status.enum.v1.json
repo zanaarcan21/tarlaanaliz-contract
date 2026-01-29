@@ -1,0 +1,244 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://api.tarlaanaliz.com/enums/mission_status.enum.v1.json",
+  "title": "MissionStatus",
+  "description": "Mission lifecycle status values",
+  "type": "string",
+  "enum": [
+    "DRAFT",
+    "PLANNED",
+    "ASSIGNED",
+    "ACCEPTED",
+    "IN_PROGRESS",
+    "COMPLETED",
+    "UPLOADED",
+    "IN_QUARANTINE",
+    "RELEASED_FROM_QUARANTINE",
+    "IN_ANALYSIS",
+    "ANALYSIS_COMPLETED",
+    "VERIFIED",
+    "DELIVERED",
+    "FAILED",
+    "CANCELLED",
+    "ON_HOLD",
+    "REJECTED"
+  ],
+  "metadata": {
+    "version": "1.0.0",
+    "lastUpdated": "2026-01-26",
+    "statusFlow": {
+      "description": "Typical mission status flow",
+      "normalFlow": [
+        "DRAFT",
+        "PLANNED",
+        "ASSIGNED",
+        "ACCEPTED",
+        "IN_PROGRESS",
+        "COMPLETED",
+        "UPLOADED",
+        "IN_QUARANTINE",
+        "RELEASED_FROM_QUARANTINE",
+        "IN_ANALYSIS",
+        "ANALYSIS_COMPLETED",
+        "VERIFIED",
+        "DELIVERED"
+      ],
+      "alternativeFlows": {
+        "failure": ["IN_PROGRESS", "FAILED"],
+        "cancellation": ["PLANNED", "CANCELLED"],
+        "hold": ["PLANNED", "ON_HOLD", "PLANNED"],
+        "rejection": ["ASSIGNED", "REJECTED", "PLANNED"]
+      }
+    },
+    "statusDescriptions": {
+      "DRAFT": {
+        "description": "Mission is being created but not yet finalized",
+        "allowedTransitions": ["PLANNED", "CANCELLED"],
+        "actor": "FARMER, COOP_ADMIN, FIELD_MANAGER",
+        "userFacing": true
+      },
+      "PLANNED": {
+        "description": "Mission is planned and ready for pilot assignment",
+        "allowedTransitions": ["ASSIGNED", "ON_HOLD", "CANCELLED"],
+        "actor": "IL_OPERATOR, FIELD_MANAGER",
+        "userFacing": true,
+        "krReference": "KR-016"
+      },
+      "ASSIGNED": {
+        "description": "Mission is assigned to a specific pilot",
+        "allowedTransitions": ["ACCEPTED", "REJECTED", "CANCELLED"],
+        "actor": "IL_OPERATOR",
+        "userFacing": true,
+        "krReference": "KR-015"
+      },
+      "ACCEPTED": {
+        "description": "Pilot has accepted the mission",
+        "allowedTransitions": ["IN_PROGRESS", "REJECTED"],
+        "actor": "PILOT",
+        "userFacing": true
+      },
+      "IN_PROGRESS": {
+        "description": "Flight is in progress",
+        "allowedTransitions": ["COMPLETED", "FAILED"],
+        "actor": "PILOT",
+        "userFacing": true
+      },
+      "COMPLETED": {
+        "description": "Flight completed, pilot returning to station",
+        "allowedTransitions": ["UPLOADED", "FAILED"],
+        "actor": "PILOT",
+        "userFacing": true
+      },
+      "UPLOADED": {
+        "description": "Data uploaded to station, awaiting quarantine check",
+        "allowedTransitions": ["IN_QUARANTINE"],
+        "actor": "STATION_SYSTEM",
+        "userFacing": false,
+        "krReference": "SOP quarantine flow"
+      },
+      "IN_QUARANTINE": {
+        "description": "Data in quarantine pending security/integrity checks",
+        "allowedTransitions": ["RELEASED_FROM_QUARANTINE", "FAILED"],
+        "actor": "STATION_SYSTEM, IL_OPERATOR",
+        "userFacing": false,
+        "krReference": "SOP quarantine decision"
+      },
+      "RELEASED_FROM_QUARANTINE": {
+        "description": "Data passed quarantine, ready for analysis",
+        "allowedTransitions": ["IN_ANALYSIS"],
+        "actor": "STATION_SYSTEM",
+        "userFacing": false
+      },
+      "IN_ANALYSIS": {
+        "description": "AI analysis in progress",
+        "allowedTransitions": ["ANALYSIS_COMPLETED", "FAILED"],
+        "actor": "WORKER_SYSTEM",
+        "userFacing": true,
+        "krReference": "KR-017"
+      },
+      "ANALYSIS_COMPLETED": {
+        "description": "Analysis completed, awaiting verification",
+        "allowedTransitions": ["VERIFIED", "FAILED"],
+        "actor": "WORKER_SYSTEM",
+        "userFacing": true
+      },
+      "VERIFIED": {
+        "description": "Results verified and ready for delivery",
+        "allowedTransitions": ["DELIVERED"],
+        "actor": "ANALYST, IL_OPERATOR",
+        "userFacing": true
+      },
+      "DELIVERED": {
+        "description": "Results delivered to farmer",
+        "allowedTransitions": [],
+        "actor": "PLATFORM_SYSTEM",
+        "userFacing": true,
+        "terminal": true
+      },
+      "FAILED": {
+        "description": "Mission failed (flight, upload, or analysis failure)",
+        "allowedTransitions": ["PLANNED"],
+        "actor": "SYSTEM, PILOT, IL_OPERATOR",
+        "userFacing": true,
+        "terminal": true,
+        "requiresFailureReason": true
+      },
+      "CANCELLED": {
+        "description": "Mission cancelled by user or system",
+        "allowedTransitions": [],
+        "actor": "FARMER, IL_OPERATOR, PLATFORM_ADMIN",
+        "userFacing": true,
+        "terminal": true,
+        "requiresCancellationReason": true
+      },
+      "ON_HOLD": {
+        "description": "Mission temporarily on hold (weather, equipment, etc.)",
+        "allowedTransitions": ["PLANNED", "CANCELLED"],
+        "actor": "IL_OPERATOR, PILOT",
+        "userFacing": true,
+        "requiresHoldReason": true
+      },
+      "REJECTED": {
+        "description": "Pilot rejected the mission assignment",
+        "allowedTransitions": ["PLANNED"],
+        "actor": "PILOT",
+        "userFacing": true,
+        "requiresRejectionReason": true
+      }
+    },
+    "statusCategories": {
+      "PRE_FLIGHT": ["DRAFT", "PLANNED", "ASSIGNED", "ACCEPTED"],
+      "FLIGHT": ["IN_PROGRESS", "COMPLETED"],
+      "POST_FLIGHT": ["UPLOADED", "IN_QUARANTINE", "RELEASED_FROM_QUARANTINE"],
+      "PROCESSING": ["IN_ANALYSIS", "ANALYSIS_COMPLETED"],
+      "FINAL": ["VERIFIED", "DELIVERED"],
+      "TERMINAL": ["DELIVERED", "FAILED", "CANCELLED"],
+      "BLOCKED": ["ON_HOLD", "REJECTED", "IN_QUARANTINE"]
+    },
+    "displayNames": {
+      "tr": {
+        "DRAFT": "Taslak",
+        "PLANNED": "Planlandı",
+        "ASSIGNED": "Atandı",
+        "ACCEPTED": "Kabul Edildi",
+        "IN_PROGRESS": "Devam Ediyor",
+        "COMPLETED": "Tamamlandı",
+        "UPLOADED": "Yüklendi",
+        "IN_QUARANTINE": "Karantinada",
+        "RELEASED_FROM_QUARANTINE": "Karantinadan Çıktı",
+        "IN_ANALYSIS": "Analiz Ediliyor",
+        "ANALYSIS_COMPLETED": "Analiz Tamamlandı",
+        "VERIFIED": "Doğrulandı",
+        "DELIVERED": "Teslim Edildi",
+        "FAILED": "Başarısız",
+        "CANCELLED": "İptal Edildi",
+        "ON_HOLD": "Beklemede",
+        "REJECTED": "Reddedildi"
+      },
+      "en": {
+        "DRAFT": "Draft",
+        "PLANNED": "Planned",
+        "ASSIGNED": "Assigned",
+        "ACCEPTED": "Accepted",
+        "IN_PROGRESS": "In Progress",
+        "COMPLETED": "Completed",
+        "UPLOADED": "Uploaded",
+        "IN_QUARANTINE": "In Quarantine",
+        "RELEASED_FROM_QUARANTINE": "Released from Quarantine",
+        "IN_ANALYSIS": "In Analysis",
+        "ANALYSIS_COMPLETED": "Analysis Completed",
+        "VERIFIED": "Verified",
+        "DELIVERED": "Delivered",
+        "FAILED": "Failed",
+        "CANCELLED": "Cancelled",
+        "ON_HOLD": "On Hold",
+        "REJECTED": "Rejected"
+      }
+    },
+    "uiColors": {
+      "DRAFT": "gray",
+      "PLANNED": "blue",
+      "ASSIGNED": "purple",
+      "ACCEPTED": "purple",
+      "IN_PROGRESS": "yellow",
+      "COMPLETED": "green",
+      "UPLOADED": "green",
+      "IN_QUARANTINE": "orange",
+      "RELEASED_FROM_QUARANTINE": "green",
+      "IN_ANALYSIS": "blue",
+      "ANALYSIS_COMPLETED": "blue",
+      "VERIFIED": "green",
+      "DELIVERED": "green",
+      "FAILED": "red",
+      "CANCELLED": "gray",
+      "ON_HOLD": "orange",
+      "REJECTED": "red"
+    }
+  },
+  "notes": {
+    "breaking_change_policy": "Adding new statuses is non-breaking (MINOR) if inserted appropriately in flow. Removing or renaming statuses is breaking (MAJOR).",
+    "state_machine": "Mission status transitions should be validated server-side. Invalid transitions should be rejected with 409 Conflict.",
+    "kr_reference": "Mission flow defined in KR-015 (Pilot), KR-016 (Routing), KR-017 (Analysis), and SOP quarantine sections.",
+    "audit_logging": "All status transitions must be logged with timestamp, actor, and reason (if applicable)."
+  }
+}

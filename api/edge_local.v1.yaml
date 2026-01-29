@@ -1,0 +1,82 @@
+openapi: 3.1.0
+info:
+  title: TarlaAnaliz Edge Local API
+  version: 1.0.0
+  description: |
+    Local API for kiosk/edge station (offline-capable).
+    UI ↔ Kiosk communication for batch creation, scanning, signing.
+    
+    **Authentication**: Local session (no remote auth when offline)
+    **Offline**: Operates without internet connection
+    
+servers:
+  - url: http://localhost:5000/v1
+    description: Local kiosk
+
+security:
+  - LocalSession: []
+
+tags:
+  - name: Batches
+    description: Batch/manifest management
+  - name: Scan
+    description: Card scanning and verification
+  - name: Status
+    description: Kiosk health and status
+
+paths:
+  /batches:
+    post:
+      tags: [Batches]
+      summary: Create batch
+      description: Create intake batch from memory card
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                card_id:
+                  type: string
+                kiosk_id:
+                  type: string
+                operator_id:
+                  type: string
+      responses:
+        '201':
+          description: Batch created
+  
+  /batches/{batch_id}/scan:
+    post:
+      tags: [Scan]
+      summary: Scan memory card
+      description: Scan card, compute hashes, run AV
+      responses:
+        '200':
+          description: Scan complete
+          content:
+            application/json:
+              schema:
+                $ref: './components/schemas.yaml#/components/schemas/IntakeManifest'
+  
+  /status:
+    get:
+      tags: [Status]
+      summary: Get kiosk status
+      description: Health check, certificate status, AV status
+      security: []
+      responses:
+        '200':
+          description: Status
+          content:
+            application/json:
+              schema:
+                $ref: './components/schemas.yaml#/components/schemas/EdgeMetadata'
+
+components:
+  securitySchemes:
+    LocalSession:
+      type: http
+      scheme: bearer
+      description: Local session token (offline-capable)

@@ -1,0 +1,74 @@
+{
+  "id": "job_60a7f1b8c9d4e5f6a7b8c9d2",
+  "field_id": "field_507f1f77bcf86cd799439011",
+  "mission_id": "mission_60a7f1b8c9d4e5f6a7b8c9d0",
+  "batch_id": "batch_60a7f1b8c9d4e5f6a7b8c9d0",
+  "manifest_id": "manifest_60a7f1b8c9d4e5f6a7b8c9d1",
+  "analysis_types": [
+    "HEALTH",
+    "DISEASE",
+    "PEST",
+    "FUNGUS",
+    "WATER_STRESS"
+  ],
+  "crop_type": "COTTON",
+  "inputs": [
+    {
+      "uri": "s3://tarlaanaliz-missions/2026/06/batch_60a7f1b8c9d4e5f6a7b8c9d0/images/",
+      "sha256": "a3f2b8c9d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1",
+      "type": "MULTISPECTRAL",
+      "size_bytes": 2515845120,
+      "mime_type": "application/x-directory"
+    },
+    {
+      "uri": "s3://tarlaanaliz-missions/2026/06/batch_60a7f1b8c9d4e5f6a7b8c9d0/metadata/flight.json",
+      "sha256": "b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1a2b3c4d5e6f7a8b9c0d1e2f3a4b5",
+      "type": "METADATA",
+      "size_bytes": 15720,
+      "mime_type": "application/json"
+    }
+  ],
+  "parameters": {
+    "model_version": "cotton-v2.3",
+    "resolution": "HIGH",
+    "confidence_threshold": 0.75,
+    "max_processing_time_minutes": 90,
+    "output_formats": [
+      "GEOTIFF",
+      "GEOJSON",
+      "PNG"
+    ],
+    "enable_visualization": true,
+    "custom_parameters": {
+      "ndvi_colormap": "RdYlGn",
+      "disease_categories": [
+        "leaf_spot",
+        "boll_rot",
+        "wilt"
+      ]
+    }
+  },
+  "priority": "NORMAL",
+  "status": "COMPLETED",
+  "progress": {
+    "percent_complete": 100,
+    "current_stage": "FINALIZING",
+    "stages_completed": 7,
+    "total_stages": 7,
+    "estimated_completion_at": "2026-06-15T09:45:00Z",
+    "last_update_at": "2026-06-15T09:45:30Z"
+  },
+  "worker_id": "worker-gpu-03-us-east-1",
+  "requested_at": "2026-06-15T08:05:00Z",
+  "started_at": "2026-06-15T08:10:00Z",
+  "completed_at": "2026-06-15T09:45:30Z",
+  "timeout_at": "2026-06-15T09:40:00Z",
+  "result_id": "result_60a7f1b8c9d4e5f6a7b8c9d3",
+  "metadata": {
+    "gpu_type": "NVIDIA A100",
+    "framework": "PyTorch 2.0",
+    "cuda_version": "12.1",
+    "images_processed": 487,
+    "total_inference_time_seconds": 3245
+  }
+}

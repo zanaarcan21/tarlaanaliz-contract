@@ -1,0 +1,410 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://api.tarlaanaliz.com/schemas/edge/quarantine_event.v1.schema.json",
+  "title": "QuarantineEvent",
+  "description": "Quarantine event with threat detection, decision, and evidence for audit trail",
+  "type": "object",
+  "properties": {
+    "id": {
+      "$ref": "#/$defs/EventId",
+      "description": "Unique event identifier"
+    },
+    "batch_id": {
+      "type": "string",
+      "pattern": "^batch_[a-z0-9]{24}$",
+      "description": "Associated batch identifier"
+    },
+    "manifest_id": {
+      "type": "string",
+      "pattern": "^manifest_[a-z0-9]{24}$",
+      "description": "Associated manifest identifier"
+    },
+    "kiosk_id": {
+      "type": "string",
+      "pattern": "^kiosk_[a-z0-9]{24}$",
+      "description": "Kiosk where event occurred"
+    },
+    "event_type": {
+      "type": "string",
+      "enum": [
+        "INTAKE_RECEIVED",
+        "SCAN_STARTED",
+        "THREAT_DETECTED",
+        "QUARANTINE_PLACED",
+        "MANUAL_REVIEW_TRIGGERED",
+        "DECISION_MADE",
+        "RELEASED",
+        "DELETED",
+        "ESCALATED"
+      ],
+      "description": "Quarantine event type"
+    },
+    "threat_type": {
+      "type": "string",
+      "description": "Threat type if applicable (reference: enums/threat_type.enum.v1.json)"
+    },
+    "decision": {
+      "type": "string",
+      "description": "Quarantine decision (reference: enums/quarantine_decision.enum.v1.json)"
+    },
+    "severity": {
+      "type": "string",
+      "enum": ["LOW", "MEDIUM", "HIGH", "CRITICAL"],
+      "description": "Event severity"
+    },
+    "reason_code": {
+      "type": "string",
+      "maxLength": 100,
+      "description": "Machine-readable reason code (e.g., HASH_MISMATCH, MALWARE_DETECTED)"
+    },
+    "reason_message": {
+      "type": "string",
+      "maxLength": 1000,
+      "description": "Human-readable reason message"
+    },
+    "affected_files": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/AffectedFile"
+      },
+      "description": "Files affected by this event"
+    },
+    "evidence": {
+      "$ref": "#/$defs/Evidence",
+      "description": "Evidence and supporting data"
+    },
+    "decision_maker": {
+      "$ref": "#/$defs/DecisionMaker",
+      "description": "Who/what made the decision"
+    },
+    "automated": {
+      "type": "boolean",
+      "description": "Whether decision was automated (true) or manual (false)"
+    },
+    "review_required": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether manual review is required"
+    },
+    "reviewed_by": {
+      "type": "string",
+      "pattern": "^user_[a-z0-9]{24}$",
+      "description": "User who performed manual review"
+    },
+    "reviewed_at": {
+      "$ref": "#/$defs/Timestamp",
+      "description": "Manual review timestamp"
+    },
+    "notes": {
+      "type": "string",
+      "maxLength": 2000,
+      "description": "Additional notes or context"
+    },
+    "metadata": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "Additional metadata"
+    },
+    "created_at": {
+      "$ref": "#/$defs/Timestamp",
+      "description": "Event creation timestamp"
+    }
+  },
+  "required": [
+    "id",
+    "batch_id",
+    "manifest_id",
+    "kiosk_id",
+    "event_type",
+    "severity",
+    "automated",
+    "created_at"
+  ],
+  "unevaluatedProperties": false,
+  "$defs": {
+    "EventId": {
+      "type": "string",
+      "pattern": "^qevent_[a-z0-9]{24}$",
+      "description": "Quarantine event identifier format: qevent_{24-char-hex}"
+    },
+    "AffectedFile": {
+      "type": "object",
+      "title": "Affected File",
+      "properties": {
+        "path": {
+          "type": "string",
+          "description": "File path within batch"
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$",
+          "description": "File SHA-256 hash"
+        },
+        "threat_name": {
+          "type": "string",
+          "description": "Specific threat name (if malware)"
+        },
+        "action_taken": {
+          "type": "string",
+          "enum": ["QUARANTINED", "DELETED", "CLEANED", "IGNORED", "FLAGGED"],
+          "description": "Action taken on this file"
+        }
+      },
+      "required": ["path", "sha256", "action_taken"],
+      "unevaluatedProperties": false
+    },
+    "Evidence": {
+      "type": "object",
+      "title": "Evidence",
+      "description": "Evidence supporting the decision",
+      "properties": {
+        "evidence_refs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/EvidenceRef"
+          },
+          "description": "References to evidence files/logs"
+        },
+        "scan_logs": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ScanLog"
+          },
+          "description": "Antivirus/integrity scan logs"
+        },
+        "hash_verification": {
+          "$ref": "#/$defs/HashVerification",
+          "description": "Hash verification results"
+        },
+        "policy_violations": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/PolicyViolation"
+          },
+          "description": "Policy violations detected"
+        }
+      },
+      "unevaluatedProperties": false
+    },
+    "EvidenceRef": {
+      "type": "object",
+      "title": "Evidence Reference",
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["SCAN_LOG", "SCREENSHOT", "FILE_SAMPLE", "HASH_REPORT", "POLICY_REPORT"],
+          "description": "Evidence type"
+        },
+        "uri": {
+          "type": "string",
+          "format": "uri",
+          "description": "URI to evidence file"
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$",
+          "description": "Evidence file hash"
+        },
+        "description": {
+          "type": "string",
+          "maxLength": 500,
+          "description": "Evidence description"
+        }
+      },
+      "required": ["type", "uri", "sha256"],
+      "unevaluatedProperties": false
+    },
+    "ScanLog": {
+      "type": "object",
+      "title": "Scan Log",
+      "properties": {
+        "scanner": {
+          "type": "string",
+          "description": "Scanner name"
+        },
+        "scan_type": {
+          "type": "string",
+          "enum": ["ANTIVIRUS", "HASH_CHECK", "METADATA_CHECK", "POLICY_CHECK"],
+          "description": "Type of scan"
+        },
+        "result": {
+          "type": "string",
+          "enum": ["CLEAN", "THREAT", "SUSPICIOUS", "ERROR"],
+          "description": "Scan result"
+        },
+        "details": {
+          "type": "string",
+          "maxLength": 1000,
+          "description": "Scan details"
+        },
+        "timestamp": {
+          "$ref": "#/$defs/Timestamp"
+        }
+      },
+      "required": ["scanner", "scan_type", "result", "timestamp"],
+      "unevaluatedProperties": false
+    },
+    "HashVerification": {
+      "type": "object",
+      "title": "Hash Verification",
+      "properties": {
+        "total_files": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "verified": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "mismatched": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "missing": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "mismatched_files": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "path": {
+                "type": "string"
+              },
+              "expected_hash": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              },
+              "actual_hash": {
+                "type": "string",
+                "pattern": "^[a-f0-9]{64}$"
+              }
+            },
+            "required": ["path", "expected_hash", "actual_hash"],
+            "unevaluatedProperties": false
+          }
+        }
+      },
+      "required": ["total_files", "verified", "mismatched", "missing"],
+      "unevaluatedProperties": false
+    },
+    "PolicyViolation": {
+      "type": "object",
+      "title": "Policy Violation",
+      "properties": {
+        "policy_id": {
+          "type": "string",
+          "description": "Policy identifier"
+        },
+        "policy_name": {
+          "type": "string",
+          "description": "Policy name"
+        },
+        "violation_type": {
+          "type": "string",
+          "enum": ["UNAUTHORIZED_FILE_TYPE", "SIZE_LIMIT", "METADATA_ANOMALY", "TIMESTAMP_ANOMALY", "OTHER"],
+          "description": "Violation type"
+        },
+        "description": {
+          "type": "string",
+          "maxLength": 500,
+          "description": "Violation description"
+        }
+      },
+      "required": ["policy_id", "policy_name", "violation_type", "description"],
+      "unevaluatedProperties": false
+    },
+    "DecisionMaker": {
+      "type": "object",
+      "title": "Decision Maker",
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["AUTOMATED", "HUMAN", "HYBRID"],
+          "description": "Decision maker type"
+        },
+        "system_name": {
+          "type": "string",
+          "description": "System name (if automated)"
+        },
+        "system_version": {
+          "type": "string",
+          "description": "System version"
+        },
+        "user_id": {
+          "type": "string",
+          "pattern": "^user_[a-z0-9]{24}$",
+          "description": "User ID (if human)"
+        },
+        "user_role": {
+          "type": "string",
+          "description": "User role (reference: enums/role.enum.v1.json)"
+        }
+      },
+      "required": ["type"],
+      "unevaluatedProperties": false
+    },
+    "Timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 timestamp (UTC)"
+    }
+  },
+  "examples": [
+    {
+      "id": "qevent_60a7f1b8c9d4e5f6a7b8c9d4",
+      "batch_id": "batch_60a7f1b8c9d4e5f6a7b8c9d0",
+      "manifest_id": "manifest_60a7f1b8c9d4e5f6a7b8c9d1",
+      "kiosk_id": "kiosk_diyarbakir_central_01",
+      "event_type": "RELEASED",
+      "decision": "RELEASED",
+      "severity": "LOW",
+      "reason_code": "ALL_CHECKS_PASSED",
+      "reason_message": "All integrity and security checks passed. Batch released for processing.",
+      "affected_files": [],
+      "evidence": {
+        "evidence_refs": [
+          {
+            "type": "SCAN_LOG",
+            "uri": "s3://tarlaanaliz-quarantine/logs/batch_60a7f1b8c9d4e5f6a7b8c9d0/av_scan.log",
+            "sha256": "d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6",
+            "description": "ClamAV scan log - clean result"
+          }
+        ],
+        "scan_logs": [
+          {
+            "scanner": "ClamAV",
+            "scan_type": "ANTIVIRUS",
+            "result": "CLEAN",
+            "details": "Scanned 487 files, 0 threats detected",
+            "timestamp": "2026-06-15T08:02:15Z"
+          }
+        ],
+        "hash_verification": {
+          "total_files": 487,
+          "verified": 487,
+          "mismatched": 0,
+          "missing": 0,
+          "mismatched_files": []
+        },
+        "policy_violations": []
+      },
+      "decision_maker": {
+        "type": "AUTOMATED",
+        "system_name": "quarantine-service",
+        "system_version": "1.2.3"
+      },
+      "automated": true,
+      "review_required": false,
+      "created_at": "2026-06-15T08:02:30Z"
+    }
+  ],
+  "notes": {
+    "audit_trail": "Every quarantine decision MUST be logged with full evidence. Retention: 7 years for compliance.",
+    "chain_of_custody": "Quarantine events are part of chain-of-custody. Link to intake_manifest for full trail.",
+    "escalation": "CRITICAL threats (malware, tampered signatures) trigger automatic escalation to security team.",
+    "sop_reference": "Quarantine decision procedures in SAHA_OPERASYON_SOP_v2_4_.docx Section 3.",
+    "kr_reference": "Security acceptance criteria in KR-040."
+  }
+}

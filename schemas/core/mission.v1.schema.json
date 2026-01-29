@@ -1,0 +1,419 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://api.tarlaanaliz.com/schemas/core/mission.v1.schema.json",
+  "title": "Mission",
+  "description": "Agricultural drone flight mission with field, schedule, status, and data references. PII-free, pilot assignment tracked via events.",
+  "type": "object",
+  "properties": {
+    "id": {
+      "$ref": "#/$defs/MissionId",
+      "description": "Unique mission identifier"
+    },
+    "field_id": {
+      "$ref": "#/$defs/FieldId",
+      "description": "Target field identifier"
+    },
+    "status": {
+      "type": "string",
+      "description": "Mission status (reference: enums/mission_status.enum.v1.json)"
+    },
+    "priority": {
+      "type": "string",
+      "enum": ["LOW", "NORMAL", "HIGH", "URGENT"],
+      "default": "NORMAL",
+      "description": "Mission priority"
+    },
+    "analysis_types": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "description": "Analysis types requested (reference: enums/analysis_type.enum.v1.json)"
+      },
+      "minItems": 1,
+      "uniqueItems": true,
+      "description": "Requested analysis types"
+    },
+    "schedule": {
+      "$ref": "#/$defs/TimeWindow",
+      "description": "Scheduled flight time window"
+    },
+    "flight_plan": {
+      "$ref": "#/$defs/FlightPlan",
+      "description": "Flight plan parameters"
+    },
+    "flight_data": {
+      "$ref": "#/$defs/FlightData",
+      "description": "Actual flight execution data"
+    },
+    "intake_manifest_id": {
+      "type": "string",
+      "pattern": "^manifest_[a-z0-9]{24}$",
+      "description": "Reference to intake manifest (after upload)"
+    },
+    "quarantine_status": {
+      "type": "string",
+      "description": "Quarantine decision (reference: enums/quarantine_decision.enum.v1.json)"
+    },
+    "analysis_job_id": {
+      "type": "string",
+      "pattern": "^job_[a-z0-9]{24}$",
+      "description": "Reference to analysis job (after release from quarantine)"
+    },
+    "result_ids": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^result_[a-z0-9]{24}$"
+      },
+      "description": "References to analysis results"
+    },
+    "assigned_to": {
+      "$ref": "#/$defs/AssignmentInfo",
+      "description": "Pilot assignment information"
+    },
+    "failure_reason": {
+      "type": "string",
+      "maxLength": 500,
+      "description": "Failure reason (required if status is FAILED)"
+    },
+    "cancellation_reason": {
+      "type": "string",
+      "maxLength": 500,
+      "description": "Cancellation reason (required if status is CANCELLED)"
+    },
+    "notes": {
+      "type": "string",
+      "maxLength": 1000,
+      "description": "Optional mission notes"
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "maxLength": 50
+      },
+      "maxItems": 20,
+      "uniqueItems": true,
+      "description": "Custom tags"
+    },
+    "created_at": {
+      "$ref": "#/$defs/Timestamp",
+      "description": "Mission creation timestamp"
+    },
+    "updated_at": {
+      "$ref": "#/$defs/Timestamp",
+      "description": "Last update timestamp"
+    },
+    "metadata": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "Optional metadata for extensions"
+    }
+  },
+  "required": [
+    "id",
+    "field_id",
+    "status",
+    "priority",
+    "analysis_types",
+    "schedule",
+    "created_at",
+    "updated_at"
+  ],
+  "unevaluatedProperties": false,
+  "$defs": {
+    "MissionId": {
+      "type": "string",
+      "pattern": "^mission_[a-z0-9]{24}$",
+      "description": "Mission identifier format: mission_{24-char-hex}"
+    },
+    "FieldId": {
+      "type": "string",
+      "pattern": "^field_[a-z0-9]{24}$",
+      "description": "Field identifier format: field_{24-char-hex}"
+    },
+    "TimeWindow": {
+      "type": "object",
+      "title": "Time Window",
+      "description": "Scheduled time window for mission",
+      "properties": {
+        "scheduled_date": {
+          "$ref": "#/$defs/Date",
+          "description": "Planned flight date"
+        },
+        "earliest_start": {
+          "$ref": "#/$defs/Timestamp",
+          "description": "Earliest acceptable start time"
+        },
+        "latest_start": {
+          "$ref": "#/$defs/Timestamp",
+          "description": "Latest acceptable start time"
+        },
+        "estimated_duration_minutes": {
+          "type": "integer",
+          "minimum": 5,
+          "maximum": 300,
+          "description": "Estimated flight duration in minutes"
+        }
+      },
+      "required": ["scheduled_date", "earliest_start", "latest_start"],
+      "unevaluatedProperties": false
+    },
+    "FlightPlan": {
+      "type": "object",
+      "title": "Flight Plan",
+      "description": "Planned flight parameters",
+      "properties": {
+        "altitude_meters": {
+          "type": "number",
+          "minimum": 10,
+          "maximum": 120,
+          "description": "Flight altitude AGL (above ground level)"
+        },
+        "speed_ms": {
+          "type": "number",
+          "minimum": 1,
+          "maximum": 15,
+          "description": "Flight speed in meters per second"
+        },
+        "overlap_forward_percent": {
+          "type": "integer",
+          "minimum": 60,
+          "maximum": 90,
+          "default": 75,
+          "description": "Forward overlap percentage"
+        },
+        "overlap_side_percent": {
+          "type": "integer",
+          "minimum": 60,
+          "maximum": 90,
+          "default": 75,
+          "description": "Side overlap percentage"
+        },
+        "camera_settings": {
+          "$ref": "#/$defs/CameraSettings"
+        },
+        "waypoints": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Waypoint"
+          },
+          "minItems": 2,
+          "description": "Flight waypoints"
+        }
+      },
+      "unevaluatedProperties": false
+    },
+    "FlightData": {
+      "type": "object",
+      "title": "Flight Data",
+      "description": "Actual flight execution data",
+      "properties": {
+        "actual_start": {
+          "$ref": "#/$defs/Timestamp",
+          "description": "Actual flight start time"
+        },
+        "actual_end": {
+          "$ref": "#/$defs/Timestamp",
+          "description": "Actual flight end time"
+        },
+        "actual_duration_minutes": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Actual flight duration"
+        },
+        "images_captured": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Number of images captured"
+        },
+        "flight_log_file": {
+          "$ref": "#/$defs/FileRef",
+          "description": "Reference to flight log file"
+        },
+        "weather_conditions": {
+          "$ref": "#/$defs/WeatherConditions"
+        }
+      },
+      "unevaluatedProperties": false
+    },
+    "CameraSettings": {
+      "type": "object",
+      "title": "Camera Settings",
+      "properties": {
+        "mode": {
+          "type": "string",
+          "enum": ["RGB", "MULTISPECTRAL", "THERMAL"],
+          "description": "Camera mode"
+        },
+        "resolution": {
+          "type": "string",
+          "description": "Image resolution (e.g., 5472x3648)"
+        },
+        "iso": {
+          "type": "integer",
+          "description": "ISO setting"
+        },
+        "shutter_speed": {
+          "type": "string",
+          "description": "Shutter speed (e.g., 1/1000)"
+        }
+      },
+      "unevaluatedProperties": false
+    },
+    "Waypoint": {
+      "type": "object",
+      "title": "Waypoint",
+      "properties": {
+        "sequence": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Waypoint sequence number"
+        },
+        "coordinates": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          },
+          "minItems": 2,
+          "maxItems": 3,
+          "description": "[longitude, latitude, altitude?]"
+        },
+        "action": {
+          "type": "string",
+          "enum": ["TAKE_PHOTO", "START_CAPTURE", "STOP_CAPTURE", "HOVER"],
+          "description": "Action at waypoint"
+        }
+      },
+      "required": ["sequence", "coordinates"],
+      "unevaluatedProperties": false
+    },
+    "WeatherConditions": {
+      "type": "object",
+      "title": "Weather Conditions",
+      "properties": {
+        "temperature_celsius": {
+          "type": "number",
+          "description": "Air temperature"
+        },
+        "wind_speed_ms": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Wind speed in m/s"
+        },
+        "wind_direction_degrees": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 360,
+          "description": "Wind direction (0-360 degrees)"
+        },
+        "cloud_cover_percent": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 100,
+          "description": "Cloud cover percentage"
+        },
+        "conditions": {
+          "type": "string",
+          "enum": ["CLEAR", "PARTLY_CLOUDY", "CLOUDY", "OVERCAST", "RAIN", "FOG"],
+          "description": "General weather conditions"
+        }
+      },
+      "unevaluatedProperties": false
+    },
+    "AssignmentInfo": {
+      "type": "object",
+      "title": "Assignment Information",
+      "description": "Pilot assignment details (NOTE: pilot identity is NOT stored here; tracked via events)",
+      "properties": {
+        "assigned_at": {
+          "$ref": "#/$defs/Timestamp",
+          "description": "Assignment timestamp"
+        },
+        "accepted_at": {
+          "$ref": "#/$defs/Timestamp",
+          "description": "Acceptance timestamp"
+        },
+        "assignment_method": {
+          "type": "string",
+          "enum": ["MANUAL", "AUTO_ROUTING", "PILOT_CLAIMED"],
+          "description": "How mission was assigned"
+        }
+      },
+      "unevaluatedProperties": false
+    },
+    "FileRef": {
+      "type": "object",
+      "title": "File Reference",
+      "properties": {
+        "uri": {
+          "type": "string",
+          "format": "uri",
+          "description": "File URI (s3://, file://, etc.)"
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$",
+          "description": "SHA-256 hash of file"
+        },
+        "size_bytes": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "File size in bytes"
+        },
+        "mime_type": {
+          "type": "string",
+          "description": "MIME type"
+        }
+      },
+      "required": ["uri", "sha256"],
+      "unevaluatedProperties": false
+    },
+    "Timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 timestamp (UTC)"
+    },
+    "Date": {
+      "type": "string",
+      "format": "date",
+      "description": "ISO 8601 date (YYYY-MM-DD)"
+    }
+  },
+  "examples": [
+    {
+      "id": "mission_60a7f1b8c9d4e5f6a7b8c9d0",
+      "field_id": "field_507f1f77bcf86cd799439011",
+      "status": "PLANNED",
+      "priority": "NORMAL",
+      "analysis_types": ["NDVI", "HEALTH_INDEX", "DISEASE_DETECTION"],
+      "schedule": {
+        "scheduled_date": "2026-06-15",
+        "earliest_start": "2026-06-15T06:00:00Z",
+        "latest_start": "2026-06-15T10:00:00Z",
+        "estimated_duration_minutes": 30
+      },
+      "flight_plan": {
+        "altitude_meters": 50,
+        "speed_ms": 5,
+        "overlap_forward_percent": 75,
+        "overlap_side_percent": 75,
+        "camera_settings": {
+          "mode": "MULTISPECTRAL",
+          "resolution": "2592x1944"
+        }
+      },
+      "tags": ["routine", "cotton"],
+      "created_at": "2026-06-01T10:30:00Z",
+      "updated_at": "2026-06-01T10:30:00Z"
+    }
+  ],
+  "notes": {
+    "pilot_assignment": "Pilot assignment is NOT stored in this schema. Pilot identity is tracked via events/mission_assigned.v1 event and separate operational database.",
+    "pii_free": "This schema contains NO PII. Pilot, farmer, and operator identities are managed via RBAC and events.",
+    "status_flow": "Status transitions must follow mission_status.enum.v1 allowed transitions. Invalid transitions are rejected.",
+    "quarantine_flow": "After upload, mission enters quarantine (UPLOADED → IN_QUARANTINE). Only after RELEASED_FROM_QUARANTINE can analysis begin.",
+    "kr_reference": "Mission model defined in KR-015 (Pilot), KR-016 (Routing), KR-017 (Analysis).",
+    "events": "Mission lifecycle tracked via events: mission_assigned, mission_completed, analysis_completed."
+  }
+}

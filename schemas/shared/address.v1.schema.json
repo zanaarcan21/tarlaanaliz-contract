@@ -1,0 +1,117 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://api.tarlaanaliz.com/schemas/shared/address.v1.schema.json",
+  "title": "Address",
+  "description": "Optional address schema for billing and operational purposes. PII minimization: collected only when necessary.",
+  "type": "object",
+  "properties": {
+    "street": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200,
+      "description": "Street name and number"
+    },
+    "district": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 100,
+      "description": "District (ilçe) name"
+    },
+    "city": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 100,
+      "description": "City (il) name"
+    },
+    "province": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 100,
+      "description": "Province name (for international addresses)"
+    },
+    "postal_code": {
+      "type": "string",
+      "pattern": "^[0-9]{5}$",
+      "description": "Turkish postal code (5 digits)"
+    },
+    "country": {
+      "type": "string",
+      "minLength": 2,
+      "maxLength": 2,
+      "pattern": "^[A-Z]{2}$",
+      "default": "TR",
+      "description": "ISO 3166-1 alpha-2 country code"
+    },
+    "coordinates": {
+      "$ref": "#/$defs/GeoPoint",
+      "description": "Optional geographic coordinates for the address"
+    },
+    "is_billing": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether this is a billing address"
+    },
+    "is_shipping": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether this is a shipping address"
+    },
+    "notes": {
+      "type": "string",
+      "maxLength": 500,
+      "description": "Optional delivery notes or address details"
+    }
+  },
+  "required": ["city", "country"],
+  "unevaluatedProperties": false,
+  "$defs": {
+    "GeoPoint": {
+      "type": "object",
+      "title": "Geographic Point",
+      "description": "WGS84 geographic coordinates",
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "Point",
+          "description": "GeoJSON type identifier"
+        },
+        "coordinates": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          },
+          "minItems": 2,
+          "maxItems": 2,
+          "description": "[longitude, latitude] in decimal degrees"
+        }
+      },
+      "required": ["type", "coordinates"],
+      "unevaluatedProperties": false
+    }
+  },
+  "examples": [
+    {
+      "street": "Atatürk Bulvarı No: 123",
+      "district": "Yenişehir",
+      "city": "Diyarbakır",
+      "postal_code": "21010",
+      "country": "TR",
+      "is_billing": true,
+      "is_shipping": false
+    },
+    {
+      "street": "GAP Bölge Kalkınma İdaresi",
+      "district": "Bağlar",
+      "city": "Diyarbakır",
+      "postal_code": "21070",
+      "country": "TR",
+      "coordinates": {
+        "type": "Point",
+        "coordinates": [40.2181, 37.9158]
+      },
+      "is_billing": false,
+      "is_shipping": true,
+      "notes": "Ana giriş kapısından teslimat"
+    }
+  ]
+}

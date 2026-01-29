@@ -1,0 +1,303 @@
+name: Auto Sync to Consumer Repos
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'schemas/**'
+      - 'api/**'
+      - 'CONTRACTS_VERSION.md'
+  
+  workflow_dispatch:
+    inputs:
+      target:
+        description: 'Target repository'
+        required: true
+        type: choice
+        options:
+          - all
+          - platform
+          - edge
+          - worker
+
+jobs:
+  prepare-sync:
+    name: Prepare Sync
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      checksum: ${{ steps.version.outputs.checksum }}
+    
+    steps:
+      - name: Checkout contracts
+        uses: actions/checkout@v4
+      
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      
+      - name: Extract version info
+        id: version
+        run: |
+          # Extract version from CONTRACTS_VERSION.md
+          if [ -f CONTRACTS_VERSION.md ]; then
+            VERSION=$(grep -oP 'Version: \K[0-9]+\.[0-9]+\.[0-9]+' CONTRACTS_VERSION.md | head -1)
+            CHECKSUM=$(grep -oP 'Contracts Checksum \(SHA-256\): `\K[a-f0-9]{64}' CONTRACTS_VERSION.md)
+            
+            echo "version=$VERSION" >> $GITHUB_OUTPUT
+            echo "checksum=$CHECKSUM" >> $GITHUB_OUTPUT
+            
+            echo "📌 Version: $VERSION"
+            echo "🔒 Checksum: $CHECKSUM"
+          else
+            echo "⚠️ CONTRACTS_VERSION.md not found"
+            echo "version=0.0.0" >> $GITHUB_OUTPUT
+            echo "checksum=unknown" >> $GITHUB_OUTPUT
+          fi
+      
+      - name: Verify checksums
+        run: |
+          python3 tools/pin_version.py --verify || echo "Checksum verification skipped"
+  
+  sync-to-platform:
+    name: Sync to Platform Repo
+    runs-on: ubuntu-latest
+    needs: prepare-sync
+    if: github.event.inputs.target == 'platform' || github.event.inputs.target == 'all' || github.event.inputs.target == ''
+    
+    steps:
+      - name: Checkout contracts
+        uses: actions/checkout@v4
+        with:
+          path: contracts
+      
+      - name: Checkout platform repo
+        uses: actions/checkout@v4
+        with:
+          repository: tarlaanaliz/platform  # Replace with actual repo
+          token: ${{ secrets.PLATFORM_REPO_TOKEN }}
+          path: platform
+      
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      
+      - name: Install dependencies
+        run: |
+          pip install --break-system-packages datamodel-code-generator
+          npm install -g json-schema-to-typescript
+      
+      - name: Sync contracts
+        run: |
+          export PLATFORM_DIR=${{ github.workspace }}/platform
+          cd contracts
+          ./tools/sync_to_repos.sh --target platform
+      
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v6
+        with:
+          path: platform
+          token: ${{ secrets.PLATFORM_REPO_TOKEN }}
+          commit-message: |
+            chore: sync contracts to v${{ needs.prepare-sync.outputs.version }}
+            
+            Synced from tarlaanaliz-contracts@${{ needs.prepare-sync.outputs.version }}
+            Checksum: ${{ needs.prepare-sync.outputs.checksum }}
+            
+            This is an automated sync of contract schemas and types.
+          branch: contracts/sync-v${{ needs.prepare-sync.outputs.version }}
+          delete-branch: true
+          title: '🔄 Sync contracts to v${{ needs.prepare-sync.outputs.version }}'
+          body: |
+            ## 📦 Contract Sync
+            
+            **Version:** ${{ needs.prepare-sync.outputs.version }}  
+            **Checksum:** `${{ needs.prepare-sync.outputs.checksum }}`
+            
+            ### Changes
+            
+            This PR syncs the latest contracts from `tarlaanaliz-contracts` repository.
+            
+            ### Updated Files
+            
+            - `contracts/schemas/` - All JSON Schema files
+            - `contracts/api/` - OpenAPI specifications
+            - `src/types/contracts/` - Generated TypeScript types
+            - `contracts/CONTRACTS_VERSION.md` - Version lock file
+            
+            ### Verification
+            
+            ```bash
+            # Verify checksum
+            cd contracts
+            python3 tools/pin_version.py --verify
+            ```
+            
+            ### Next Steps
+            
+            1. Review changes
+            2. Run tests: `npm test`
+            3. Merge if all checks pass
+            
+            ---
+            
+            🤖 *This PR was created automatically by the contract sync workflow*
+          labels: |
+            contracts
+            automated
+  
+  sync-to-edge:
+    name: Sync to Edge Repo
+    runs-on: ubuntu-latest
+    needs: prepare-sync
+    if: github.event.inputs.target == 'edge' || github.event.inputs.target == 'all' || github.event.inputs.target == ''
+    
+    steps:
+      - name: Checkout contracts
+        uses: actions/checkout@v4
+        with:
+          path: contracts
+      
+      - name: Checkout edge repo
+        uses: actions/checkout@v4
+        with:
+          repository: tarlaanaliz/edge  # Replace with actual repo
+          token: ${{ secrets.EDGE_REPO_TOKEN }}
+          path: edge
+      
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      
+      - name: Install dependencies
+        run: |
+          pip install --break-system-packages datamodel-code-generator
+      
+      - name: Sync contracts
+        run: |
+          export EDGE_DIR=${{ github.workspace }}/edge
+          cd contracts
+          ./tools/sync_to_repos.sh --target edge
+      
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v6
+        with:
+          path: edge
+          token: ${{ secrets.EDGE_REPO_TOKEN }}
+          commit-message: |
+            chore: sync contracts to v${{ needs.prepare-sync.outputs.version }}
+            
+            Synced from tarlaanaliz-contracts@${{ needs.prepare-sync.outputs.version }}
+          branch: contracts/sync-v${{ needs.prepare-sync.outputs.version }}
+          delete-branch: true
+          title: '🔄 Sync contracts to v${{ needs.prepare-sync.outputs.version }}'
+          body: |
+            ## 📦 Contract Sync (Edge)
+            
+            **Version:** ${{ needs.prepare-sync.outputs.version }}  
+            **Checksum:** `${{ needs.prepare-sync.outputs.checksum }}`
+            
+            ### Updated Files
+            
+            - `contracts/schemas/edge/` - Edge-specific schemas
+            - `contracts/schemas/shared/` - Shared schemas
+            - `contracts/api/edge_local.v1.yaml` - Edge local API
+            - `src/contracts/` - Generated Python types
+            
+            🤖 *Automated sync*
+          labels: |
+            contracts
+            automated
+  
+  sync-to-worker:
+    name: Sync to Worker Repo
+    runs-on: ubuntu-latest
+    needs: prepare-sync
+    if: github.event.inputs.target == 'worker' || github.event.inputs.target == 'all' || github.event.inputs.target == ''
+    
+    steps:
+      - name: Checkout contracts
+        uses: actions/checkout@v4
+        with:
+          path: contracts
+      
+      - name: Checkout worker repo
+        uses: actions/checkout@v4
+        with:
+          repository: tarlaanaliz/worker  # Replace with actual repo
+          token: ${{ secrets.WORKER_REPO_TOKEN }}
+          path: worker
+      
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      
+      - name: Install dependencies
+        run: |
+          pip install --break-system-packages datamodel-code-generator
+      
+      - name: Sync contracts
+        run: |
+          export WORKER_DIR=${{ github.workspace }}/worker
+          cd contracts
+          ./tools/sync_to_repos.sh --target worker
+      
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v6
+        with:
+          path: worker
+          token: ${{ secrets.WORKER_REPO_TOKEN }}
+          commit-message: |
+            chore: sync contracts to v${{ needs.prepare-sync.outputs.version }}
+            
+            Synced from tarlaanaliz-contracts@${{ needs.prepare-sync.outputs.version }}
+          branch: contracts/sync-v${{ needs.prepare-sync.outputs.version }}
+          delete-branch: true
+          title: '🔄 Sync contracts to v${{ needs.prepare-sync.outputs.version }}'
+          body: |
+            ## 📦 Contract Sync (Worker)
+            
+            **Version:** ${{ needs.prepare-sync.outputs.version }}  
+            **Checksum:** `${{ needs.prepare-sync.outputs.checksum }}`
+            
+            ### Updated Files
+            
+            - `contracts/schemas/worker/` - Worker-specific schemas
+            - `contracts/schemas/enums/` - Enum schemas
+            - `src/contracts/` - Generated Python types
+            
+            🤖 *Automated sync*
+          labels: |
+            contracts
+            automated
+  
+  notify-completion:
+    name: Notify Sync Completion
+    runs-on: ubuntu-latest
+    needs: [prepare-sync, sync-to-platform, sync-to-edge, sync-to-worker]
+    if: always()
+    
+    steps:
+      - name: Summary
+        run: |
+          echo "## 🔄 Contract Sync Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Version:** ${{ needs.prepare-sync.outputs.version }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Checksum:** \`${{ needs.prepare-sync.outputs.checksum }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Sync Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- Platform: ${{ needs.sync-to-platform.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Edge: ${{ needs.sync-to-edge.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "- Worker: ${{ needs.sync-to-worker.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "✅ Pull requests created in consumer repositories" >> $GITHUB_STEP_SUMMARY

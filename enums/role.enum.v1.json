@@ -1,0 +1,253 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://api.tarlaanaliz.com/enums/role.enum.v1.json",
+  "title": "Role",
+  "description": "User roles for RBAC (Role-Based Access Control) system",
+  "type": "string",
+  "enum": [
+    "FARMER",
+    "PILOT",
+    "IL_OPERATOR",
+    "COOP_ADMIN",
+    "PLATFORM_ADMIN",
+    "SUPPORT",
+    "ANALYST",
+    "FIELD_MANAGER",
+    "AGRONOMIST",
+    "ACCOUNTANT",
+    "VIEWER"
+  ],
+  "metadata": {
+    "version": "1.0.0",
+    "lastUpdated": "2026-01-26",
+    "roleHierarchy": {
+      "description": "Role hierarchy from highest to lowest privilege",
+      "order": [
+        "PLATFORM_ADMIN",
+        "IL_OPERATOR",
+        "COOP_ADMIN",
+        "ANALYST",
+        "AGRONOMIST",
+        "FIELD_MANAGER",
+        "ACCOUNTANT",
+        "SUPPORT",
+        "PILOT",
+        "FARMER",
+        "VIEWER"
+      ]
+    },
+    "roleDescriptions": {
+      "FARMER": {
+        "description": "Field owner or authorized user who requests analysis services",
+        "primaryActions": [
+          "Register fields",
+          "Request missions",
+          "View own analysis results",
+          "Manage profile"
+        ],
+        "scope": "own_fields",
+        "krReference": "KR-013"
+      },
+      "PILOT": {
+        "description": "Drone pilot who performs field scanning missions",
+        "primaryActions": [
+          "Accept missions",
+          "Upload flight data",
+          "Upload images to station",
+          "Track flight hours",
+          "View assigned missions"
+        ],
+        "scope": "assigned_missions",
+        "krReference": "KR-015"
+      },
+      "IL_OPERATOR": {
+        "description": "Provincial coordinator managing operations in a province (il)",
+        "primaryActions": [
+          "Assign missions to pilots",
+          "Monitor provincial operations",
+          "Review mission quality",
+          "Manage pilot schedules",
+          "Access provincial reports"
+        ],
+        "scope": "province",
+        "krReference": "KR-018"
+      },
+      "COOP_ADMIN": {
+        "description": "Cooperative or producer union administrator",
+        "primaryActions": [
+          "Manage member farmers",
+          "Request bulk missions",
+          "View aggregated reports",
+          "Manage cooperative billing"
+        ],
+        "scope": "cooperative_members",
+        "krReference": "KR-014"
+      },
+      "PLATFORM_ADMIN": {
+        "description": "System administrator with full platform access",
+        "primaryActions": [
+          "Manage all users",
+          "Configure system settings",
+          "Access all data",
+          "Manage pricing",
+          "System monitoring"
+        ],
+        "scope": "platform_wide",
+        "krReference": "KR-063"
+      },
+      "SUPPORT": {
+        "description": "Customer support staff",
+        "primaryActions": [
+          "View user issues",
+          "Assist with troubleshooting",
+          "Access support tickets",
+          "View limited user data"
+        ],
+        "scope": "support_scope",
+        "krReference": "KR-063"
+      },
+      "ANALYST": {
+        "description": "Data analyst or agronomist analyzing results",
+        "primaryActions": [
+          "Access analysis results",
+          "Generate reports",
+          "View field data",
+          "Quality control"
+        ],
+        "scope": "read_analysis",
+        "krReference": "KR-017"
+      },
+      "FIELD_MANAGER": {
+        "description": "Field operations manager",
+        "primaryActions": [
+          "Manage field registrations",
+          "Coordinate missions",
+          "Monitor field status",
+          "Generate field reports"
+        ],
+        "scope": "field_operations",
+        "krReference": "KR-063"
+      },
+      "AGRONOMIST": {
+        "description": "Agricultural expert providing recommendations",
+        "primaryActions": [
+          "Review analysis results",
+          "Provide recommendations",
+          "Generate agronomic reports",
+          "Consult with farmers"
+        ],
+        "scope": "agronomic_data",
+        "krReference": "KR-025"
+      },
+      "ACCOUNTANT": {
+        "description": "Financial staff managing billing and payments",
+        "primaryActions": [
+          "Manage invoices",
+          "Process payments",
+          "Generate financial reports",
+          "Track pilot payroll"
+        ],
+        "scope": "financial_data",
+        "krReference": "KR-020, KR-031"
+      },
+      "VIEWER": {
+        "description": "Read-only access for observers or auditors",
+        "primaryActions": [
+          "View public data",
+          "Access reports",
+          "No modification rights"
+        ],
+        "scope": "read_only",
+        "krReference": "KR-063"
+      }
+    },
+    "permissions": {
+      "FARMER": {
+        "fields": ["create", "read_own", "update_own"],
+        "missions": ["request", "read_own"],
+        "analysis": ["read_own"],
+        "billing": ["read_own"]
+      },
+      "PILOT": {
+        "missions": ["read_assigned", "update_assigned", "upload_data"],
+        "payroll": ["read_own"],
+        "intake": ["create"]
+      },
+      "IL_OPERATOR": {
+        "missions": ["read_province", "update_province", "assign"],
+        "pilots": ["read_province", "manage_schedule"],
+        "reports": ["read_province"]
+      },
+      "COOP_ADMIN": {
+        "fields": ["create_bulk", "read_members"],
+        "missions": ["request_bulk", "read_members"],
+        "members": ["read", "manage"],
+        "billing": ["read_coop", "manage_coop"]
+      },
+      "PLATFORM_ADMIN": {
+        "all": ["create", "read", "update", "delete", "manage"]
+      },
+      "SUPPORT": {
+        "users": ["read", "assist"],
+        "tickets": ["create", "read", "update"],
+        "data": ["read_limited"]
+      },
+      "ANALYST": {
+        "analysis": ["read_all", "generate_reports"],
+        "fields": ["read_all"],
+        "missions": ["read_all"]
+      },
+      "FIELD_MANAGER": {
+        "fields": ["create", "read_all", "update", "manage"],
+        "missions": ["create", "read_all", "coordinate"]
+      },
+      "AGRONOMIST": {
+        "analysis": ["read", "comment", "recommend"],
+        "reports": ["generate_agronomic"]
+      },
+      "ACCOUNTANT": {
+        "billing": ["read_all", "manage"],
+        "payroll": ["read_all", "manage"],
+        "invoices": ["create", "read", "update"]
+      },
+      "VIEWER": {
+        "public": ["read"],
+        "reports": ["read_public"]
+      }
+    },
+    "displayNames": {
+      "tr": {
+        "FARMER": "Çiftçi",
+        "PILOT": "Pilot",
+        "IL_OPERATOR": "İl Operatörü",
+        "COOP_ADMIN": "Kooperatif Yöneticisi",
+        "PLATFORM_ADMIN": "Platform Yöneticisi",
+        "SUPPORT": "Destek Ekibi",
+        "ANALYST": "Analist",
+        "FIELD_MANAGER": "Tarla Yöneticisi",
+        "AGRONOMIST": "Ziraat Mühendisi",
+        "ACCOUNTANT": "Muhasebe",
+        "VIEWER": "İzleyici"
+      },
+      "en": {
+        "FARMER": "Farmer",
+        "PILOT": "Pilot",
+        "IL_OPERATOR": "Provincial Operator",
+        "COOP_ADMIN": "Cooperative Admin",
+        "PLATFORM_ADMIN": "Platform Admin",
+        "SUPPORT": "Support",
+        "ANALYST": "Analyst",
+        "FIELD_MANAGER": "Field Manager",
+        "AGRONOMIST": "Agronomist",
+        "ACCOUNTANT": "Accountant",
+        "VIEWER": "Viewer"
+      }
+    }
+  },
+  "notes": {
+    "breaking_change_policy": "Adding new roles is non-breaking (MINOR). Removing or renaming roles is breaking (MAJOR) and requires migration guide.",
+    "rbac_integration": "These roles map directly to JWT claims and are used for authorization across all services.",
+    "multi_role": "Users can have multiple roles (e.g., FARMER + COOP_ADMIN). Permission union applies.",
+    "kr_reference": "Canonical role definitions in KR-011, KR-063. Do not duplicate definitions elsewhere."
+  }
+}

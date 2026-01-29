@@ -1,0 +1,11 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://tarlaanaliz.com/enums/payment_target_type.v1.json",
+  "title": "PaymentTargetType",
+  "type": "string",
+  "description": "Ödeme hedefi: Mission (tek analiz) veya Subscription (yıllık/abonelik).",
+  "enum": [
+    "MISSION",
+    "SUBSCRIPTION"
+  ]
+}

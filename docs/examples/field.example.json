@@ -1,0 +1,50 @@
+{
+  "id": "field_507f1f77bcf86cd799439011",
+  "name": "Kuzey Tarla - Pamuk 2026",
+  "boundary": {
+    "type": "Polygon",
+    "coordinates": [
+      [
+        [40.2181, 37.9158],
+        [40.2190, 37.9158],
+        [40.2190, 37.9168],
+        [40.2181, 37.9168],
+        [40.2181, 37.9158]
+      ]
+    ],
+    "crs": "EPSG:4326"
+  },
+  "area_hectares": 10.2,
+  "crop_type": "COTTON",
+  "season": {
+    "year": 2026,
+    "season_type": "SUMMER",
+    "planting_date": "2026-04-15",
+    "harvest_date": "2026-10-01"
+  },
+  "cadastral_info": {
+    "province_code": "21",
+    "district_code": "2101",
+    "village_code": "210101",
+    "parcel_number": "123/45",
+    "block_number": "123",
+    "plot_number": "45"
+  },
+  "location": {
+    "province": "Diyarbakır",
+    "province_code": "21",
+    "district": "Çınar",
+    "village": "Bağlıca Köyü",
+    "region": "GUNEYDOGUANADOLU"
+  },
+  "status": "ACTIVE",
+  "notes": "Sulama sistemi kurulu. Drip irrigation mevcut. İlk yıl pamuk ekimi.",
+  "tags": ["gap", "pamuk", "2026", "sulama"],
+  "created_at": "2026-01-15T08:30:00Z",
+  "updated_at": "2026-01-20T14:45:00Z",
+  "metadata": {
+    "irrigation_type": "drip",
+    "soil_type": "clay_loam",
+    "previous_crop": "WHEAT"
+  }
+}

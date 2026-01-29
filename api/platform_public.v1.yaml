@@ -1,0 +1,332 @@
+openapi: 3.1.0
+info:
+  title: TarlaAnaliz Platform Public API
+  version: 1.0.0
+  description: |
+    Public API for TarlaAnaliz web and mobile applications.
+    Consumed by farmer UI, cooperative UI, and pilot apps.
+    
+    **Authentication**: Session token (phone + PIN, NO email/TCKN/OTP per KR-050)
+    **PII Policy**: Minimal PII collection, separate PII vault
+    **RBAC**: Role-based access control (11 roles)
+    
+    **Base URL**: `https://api.tarlaanaliz.com/v1`
+    
+  contact:
+    name: TarlaAnaliz API Support
+    email: api-support@tarlaanaliz.com
+  license:
+    name: Proprietary
+
+servers:
+  - url: https://api.tarlaanaliz.com/v1
+    description: Production
+  - url: https://api-staging.tarlaanaliz.com/v1
+    description: Staging
+  - url: http://localhost:8000/v1
+    description: Local development
+
+security:
+  - SessionToken: []
+
+tags:
+  - name: Auth
+    description: Authentication endpoints (phone + PIN)
+  - name: Fields
+    description: Field management
+  - name: Missions
+    description: Mission management
+  - name: Results
+    description: Analysis results
+  - name: Users
+    description: User profile management
+  - name: Pricing
+    description: Pricing and subscriptions
+
+paths:
+  # ==================== Authentication ====================
+  
+  /auth/login:
+    post:
+      tags: [Auth]
+      summary: Login with phone + PIN
+      description: |
+        Authenticate using phone number and 6-digit PIN.
+        Returns session token (JWT) valid for 24 hours.
+        Per KR-050: NO email, NO TCKN, NO OTP.
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: './components/schemas.yaml#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                $ref: './components/schemas.yaml#/components/schemas/LoginResponse'
+        '401':
+          $ref: './components/responses.yaml#/components/responses/Unauthorized'
+        '429':
+          $ref: './components/responses.yaml#/components/responses/TooManyRequests'
+  
+  /auth/refresh:
+    post:
+      tags: [Auth]
+      summary: Refresh session token
+      description: Use refresh token to obtain new session token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                refresh_token:
+                  type: string
+              required:
+                - refresh_token
+      responses:
+        '200':
+          description: Token refreshed
+          content:
+            application/json:
+              schema:
+                $ref: './components/schemas.yaml#/components/schemas/LoginResponse'
+        '401':
+          $ref: './components/responses.yaml#/components/responses/Unauthorized'
+  
+  /auth/logout:
+    post:
+      tags: [Auth]
+      summary: Logout (invalidate session)
+      responses:
+        '204':
+          $ref: './components/responses.yaml#/components/responses/NoContent'
+  
+  # ==================== Fields ====================
+  
+  /fields:
+    get:
+      tags: [Fields]
+      summary: List fields
+      description: List all fields accessible to current user (RBAC filtered)
+      parameters:
+        - $ref: './components/parameters.yaml#/components/parameters/Page'
+        - $ref: './components/parameters.yaml#/components/parameters/PageSize'
+        - $ref: './components/parameters.yaml#/components/parameters/CropType'
+        - $ref: './components/parameters.yaml#/components/parameters/Province'
+        - $ref: './components/parameters.yaml#/components/parameters/SortBy'
+        - $ref: './components/parameters.yaml#/components/parameters/SortOrder'
+      responses:
+        '200':
+          description: List of fields
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: './components/schemas.yaml#/components/schemas/Field'
+                  meta:
+                    $ref: './components/responses.yaml#/components/schemas/PaginationMeta'
+    
+    post:
+      tags: [Fields]
+      summary: Create field
+      description: Register new field (per KR-013)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: './components/schemas.yaml#/components/schemas/CreateFieldRequest'
+      responses:
+        '201':
+          $ref: './components/responses.yaml#/components/responses/Created'
+        '400':
+          $ref: './components/responses.yaml#/components/responses/BadRequest'
+        '409':
+          $ref: './components/responses.yaml#/components/responses/Conflict'
+  
+  /fields/{field_id}:
+    parameters:
+      - $ref: './components/parameters.yaml#/components/parameters/FieldId'
+    
+    get:
+      tags: [Fields]
+      summary: Get field details
+      responses:
+        '200':
+          description: Field details
+          content:
+            application/json:
+              schema:
+                $ref: './components/schemas.yaml#/components/schemas/Field'
+        '404':
+          $ref: './components/responses.yaml#/components/responses/NotFound'
+    
+    put:
+      tags: [Fields]
+      summary: Update field
+      parameters:
+        - $ref: './components/parameters.yaml#/components/parameters/IfMatch'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: './components/schemas.yaml#/components/schemas/Field'
+      responses:
+        '200':
+          $ref: './components/responses.yaml#/components/responses/Updated'
+        '409':
+          $ref: './components/responses.yaml#/components/responses/Conflict'
+    
+    delete:
+      tags: [Fields]
+      summary: Delete field (soft delete)
+      responses:
+        '200':
+          $ref: './components/responses.yaml#/components/responses/Deleted'
+  
+  # ==================== Missions ====================
+  
+  /missions:
+    get:
+      tags: [Missions]
+      summary: List missions
+      parameters:
+        - $ref: './components/parameters.yaml#/components/parameters/Page'
+        - $ref: './components/parameters.yaml#/components/parameters/PageSize'
+        - $ref: './components/parameters.yaml#/components/parameters/MissionStatus'
+        - $ref: './components/parameters.yaml#/components/parameters/FromDate'
+        - $ref: './components/parameters.yaml#/components/parameters/ToDate'
+      responses:
+        '200':
+          description: List of missions
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: './components/schemas.yaml#/components/schemas/Mission'
+                  meta:
+                    $ref: './components/responses.yaml#/components/schemas/PaginationMeta'
+    
+    post:
+      tags: [Missions]
+      summary: Create mission
+      description: Create new mission (per KR-013, KR-015)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: './components/schemas.yaml#/components/schemas/CreateMissionRequest'
+      responses:
+        '201':
+          $ref: './components/responses.yaml#/components/responses/Created'
+  
+  /missions/{mission_id}:
+    parameters:
+      - $ref: './components/parameters.yaml#/components/parameters/MissionId'
+    
+    get:
+      tags: [Missions]
+      summary: Get mission details
+      responses:
+        '200':
+          description: Mission details
+          content:
+            application/json:
+              schema:
+                $ref: './components/schemas.yaml#/components/schemas/Mission'
+  
+  /missions/{mission_id}/accept:
+    parameters:
+      - $ref: './components/parameters.yaml#/components/parameters/MissionId'
+    
+    post:
+      tags: [Missions]
+      summary: Accept mission (pilot only)
+      description: Pilot accepts assigned mission
+      responses:
+        '200':
+          $ref: './components/responses.yaml#/components/responses/Success'
+        '403':
+          $ref: './components/responses.yaml#/components/responses/Forbidden'
+  
+  # ==================== Results ====================
+  
+  /results:
+    get:
+      tags: [Results]
+      summary: List analysis results
+      parameters:
+        - $ref: './components/parameters.yaml#/components/parameters/Page'
+        - $ref: './components/parameters.yaml#/components/parameters/PageSize'
+        - $ref: './components/parameters.yaml#/components/parameters/AnalysisType'
+        - name: field_id
+          in: query
+          schema:
+            type: string
+          description: Filter by field ID
+      responses:
+        '200':
+          description: List of results
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    items:
+                      $ref: './components/schemas.yaml#/components/schemas/AnalysisResult'
+                  meta:
+                    $ref: './components/responses.yaml#/components/schemas/PaginationMeta'
+  
+  /results/{result_id}:
+    parameters:
+      - $ref: './components/parameters.yaml#/components/parameters/ResultId'
+    
+    get:
+      tags: [Results]
+      summary: Get result details
+      description: Get analysis result with map layers (KR-002)
+      responses:
+        '200':
+          description: Result details
+          content:
+            application/json:
+              schema:
+                $ref: './components/schemas.yaml#/components/schemas/AnalysisResult'
+  
+  # ==================== Pricing ====================
+  
+  /pricing/current:
+    get:
+      tags: [Pricing]
+      summary: Get current price book
+      description: Get active price catalog (per KR-022)
+      responses:
+        '200':
+          description: Current price book
+          content:
+            application/json:
+              schema:
+                $ref: './components/schemas.yaml#/components/schemas/PriceBook'
+
+components:
+  securitySchemes:
+    SessionToken:
+      $ref: './components/security_schemes.yaml#/components/securitySchemes/SessionToken'

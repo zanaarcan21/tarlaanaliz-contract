@@ -1,0 +1,237 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://api.tarlaanaliz.com/enums/quarantine_decision.enum.v1.json",
+  "title": "QuarantineDecision",
+  "description": "Quarantine decisions for uploaded mission data",
+  "type": "string",
+  "enum": [
+    "QUARANTINED",
+    "RELEASED",
+    "DELETED",
+    "MANUAL_REVIEW_REQUIRED",
+    "PENDING_SCAN",
+    "SCAN_IN_PROGRESS",
+    "REJECTED",
+    "CONDITIONALLY_RELEASED",
+    "ESCALATED"
+  ],
+  "metadata": {
+    "version": "1.0.0",
+    "lastUpdated": "2026-01-26",
+    "decisionFlow": {
+      "description": "Typical quarantine decision flow",
+      "normalFlow": [
+        "PENDING_SCAN",
+        "SCAN_IN_PROGRESS",
+        "RELEASED"
+      ],
+      "threatDetectedFlow": [
+        "PENDING_SCAN",
+        "SCAN_IN_PROGRESS",
+        "QUARANTINED",
+        "MANUAL_REVIEW_REQUIRED",
+        "RELEASED"
+      ],
+      "severeThreatFlow": [
+        "PENDING_SCAN",
+        "SCAN_IN_PROGRESS",
+        "QUARANTINED",
+        "ESCALATED",
+        "DELETED"
+      ]
+    },
+    "decisionDescriptions": {
+      "QUARANTINED": {
+        "description": "Data isolated in quarantine, not available for processing",
+        "nextStates": [
+          "MANUAL_REVIEW_REQUIRED",
+          "DELETED",
+          "RELEASED"
+        ],
+        "autoTransition": false,
+        "notifyRoles": ["IL_OPERATOR", "PILOT"],
+        "sopReference": "SOP Section 3.12 - Quarantine Decision",
+        "requiresReason": true
+      },
+      "RELEASED": {
+        "description": "Data passed all checks and released for processing",
+        "nextStates": [],
+        "terminal": true,
+        "autoTransition": true,
+        "notifyRoles": ["PILOT"],
+        "sopReference": "SOP Section 3.13 - Release Procedure"
+      },
+      "DELETED": {
+        "description": "Data permanently deleted due to security threat",
+        "nextStates": [],
+        "terminal": true,
+        "autoTransition": false,
+        "notifyRoles": ["IL_OPERATOR", "PILOT", "SECURITY_TEAM"],
+        "sopReference": "SOP Section 3.14 - Data Deletion",
+        "requiresReason": true,
+        "requiresApproval": true,
+        "auditRequired": true
+      },
+      "MANUAL_REVIEW_REQUIRED": {
+        "description": "Automated checks inconclusive, requires human review",
+        "nextStates": [
+          "RELEASED",
+          "DELETED",
+          "CONDITIONALLY_RELEASED",
+          "ESCALATED"
+        ],
+        "autoTransition": false,
+        "notifyRoles": ["IL_OPERATOR"],
+        "sopReference": "SOP Section 3.15 - Manual Review Process",
+        "requiresReviewer": true
+      },
+      "PENDING_SCAN": {
+        "description": "Awaiting quarantine scan initiation",
+        "nextStates": [
+          "SCAN_IN_PROGRESS"
+        ],
+        "autoTransition": true,
+        "notifyRoles": [],
+        "sopReference": "SOP Section 3.1 - Intake Process"
+      },
+      "SCAN_IN_PROGRESS": {
+        "description": "Quarantine scan actively running",
+        "nextStates": [
+          "RELEASED",
+          "QUARANTINED",
+          "MANUAL_REVIEW_REQUIRED"
+        ],
+        "autoTransition": true,
+        "notifyRoles": [],
+        "sopReference": "SOP Section 3.2 - Scanning Process"
+      },
+      "REJECTED": {
+        "description": "Upload rejected without quarantine (e.g., wrong format)",
+        "nextStates": [],
+        "terminal": true,
+        "autoTransition": true,
+        "notifyRoles": ["PILOT"],
+        "sopReference": "SOP Section 3.3 - Rejection Criteria",
+        "requiresReason": true
+      },
+      "CONDITIONALLY_RELEASED": {
+        "description": "Released with conditions/warnings for processing",
+        "nextStates": [],
+        "terminal": true,
+        "autoTransition": false,
+        "notifyRoles": ["IL_OPERATOR", "ANALYST"],
+        "sopReference": "SOP Section 3.16 - Conditional Release",
+        "requiresConditions": true,
+        "requiresReviewer": true
+      },
+      "ESCALATED": {
+        "description": "Escalated to security team for investigation",
+        "nextStates": [
+          "RELEASED",
+          "DELETED",
+          "QUARANTINED"
+        ],
+        "autoTransition": false,
+        "notifyRoles": ["SECURITY_TEAM", "PLATFORM_ADMIN"],
+        "sopReference": "SOP Section 3.17 - Escalation Procedure",
+        "requiresIncidentId": true,
+        "auditRequired": true
+      }
+    },
+    "autoDecisionRules": {
+      "RELEASED": {
+        "conditions": [
+          "No threats detected",
+          "All integrity checks passed",
+          "Manifest valid",
+          "Hash verified",
+          "File types allowed",
+          "Antivirus clean"
+        ]
+      },
+      "QUARANTINED": {
+        "conditions": [
+          "High severity threat detected",
+          "Hash mismatch",
+          "Policy violation",
+          "Unauthorized file type"
+        ]
+      },
+      "MANUAL_REVIEW_REQUIRED": {
+        "conditions": [
+          "Medium severity threat detected",
+          "Anomalies detected but not critical",
+          "Conflicting scan results"
+        ]
+      },
+      "REJECTED": {
+        "conditions": [
+          "Missing manifest",
+          "File format not supported",
+          "Upload incomplete"
+        ]
+      }
+    },
+    "displayNames": {
+      "tr": {
+        "QUARANTINED": "Karantinaya Alındı",
+        "RELEASED": "Serbest Bırakıldı",
+        "DELETED": "Silindi",
+        "MANUAL_REVIEW_REQUIRED": "Manuel İnceleme Gerekli",
+        "PENDING_SCAN": "Tarama Bekliyor",
+        "SCAN_IN_PROGRESS": "Tarama Devam Ediyor",
+        "REJECTED": "Reddedildi",
+        "CONDITIONALLY_RELEASED": "Şartlı Serbest Bırakıldı",
+        "ESCALATED": "Yükseltildi"
+      },
+      "en": {
+        "QUARANTINED": "Quarantined",
+        "RELEASED": "Released",
+        "DELETED": "Deleted",
+        "MANUAL_REVIEW_REQUIRED": "Manual Review Required",
+        "PENDING_SCAN": "Pending Scan",
+        "SCAN_IN_PROGRESS": "Scan In Progress",
+        "REJECTED": "Rejected",
+        "CONDITIONALLY_RELEASED": "Conditionally Released",
+        "ESCALATED": "Escalated"
+      }
+    },
+    "uiColors": {
+      "QUARANTINED": "red",
+      "RELEASED": "green",
+      "DELETED": "gray",
+      "MANUAL_REVIEW_REQUIRED": "orange",
+      "PENDING_SCAN": "blue",
+      "SCAN_IN_PROGRESS": "blue",
+      "REJECTED": "red",
+      "CONDITIONALLY_RELEASED": "yellow",
+      "ESCALATED": "purple"
+    },
+    "slaTimings": {
+      "PENDING_SCAN": {
+        "maxDuration": "5 minutes",
+        "description": "Maximum time before scan must start"
+      },
+      "SCAN_IN_PROGRESS": {
+        "maxDuration": "15 minutes",
+        "description": "Maximum scan duration for normal upload size"
+      },
+      "MANUAL_REVIEW_REQUIRED": {
+        "maxDuration": "4 hours",
+        "description": "Target time for manual review during business hours"
+      },
+      "QUARANTINED": {
+        "maxDuration": "24 hours",
+        "description": "Maximum time in quarantine before decision required"
+      }
+    }
+  },
+  "notes": {
+    "breaking_change_policy": "Adding new decisions is non-breaking (MINOR). Removing or renaming decisions is breaking (MAJOR).",
+    "sop_reference": "Quarantine decision procedures defined in SAHA_OPERASYON_SOP_v2_4_.docx Section 3.",
+    "audit_trail": "All quarantine decisions must be logged with timestamp, actor, reason, and supporting evidence.",
+    "notification": "System must notify appropriate roles based on decision type (see notifyRoles in metadata).",
+    "chain_of_custody": "Every decision transition must maintain complete chain-of-custody documentation.",
+    "kr_reference": "Security and quarantine flow defined in KR-040 (Security Acceptance Criteria)."
+  }
+}

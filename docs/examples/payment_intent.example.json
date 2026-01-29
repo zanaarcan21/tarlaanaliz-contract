@@ -1,0 +1,22 @@
+{
+  "payment_intent_id": "d20da61f-82c1-4d46-85bf-6ba4c858ac2d",
+  "target_type": "MISSION",
+  "target_id": "060824b9-29b3-4601-8a66-ae77b9241fd8",
+  "payer_user_id": "3e4df15a-40e4-4719-b65a-1711f73d30ec",
+  "payment_method": "IBAN_TRANSFER",
+  "status": "PAYMENT_PENDING",
+  "amount_kurus": 25000,
+  "currency": "TRY",
+  "reference_code": "ANALIZ-abc123",
+  "bank_details": {
+    "iban": "TR33 0006 1005 1978 6457 8413 26",
+    "account_holder": "TarlaAnaliz Tarım Teknolojileri A.Ş.",
+    "instructions": "Açıklamaya referans kodunu yazın ve dekontu odeme@tarlaanaliz.com adresine gönderin."
+  },
+  "created_at": "2026-01-29T10:00:00Z",
+  "updated_at": "2026-01-29T10:00:00Z",
+  "expires_at": "2026-02-05T23:59:59Z",
+  "metadata": {
+    "channel": "web"
+  }
+}

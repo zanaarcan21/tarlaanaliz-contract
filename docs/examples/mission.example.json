@@ -1,0 +1,101 @@
+{
+  "id": "mission_60a7f1b8c9d4e5f6a7b8c9d0",
+  "field_id": "field_507f1f77bcf86cd799439011",
+  "status": "COMPLETED",
+  "priority": "NORMAL",
+  "analysis_types": [
+    "HEALTH",
+    "DISEASE",
+    "PEST",
+    "FUNGUS",
+    "WATER_STRESS"
+  ],
+  "schedule": {
+    "scheduled_date": "2026-06-15",
+    "earliest_start": "2026-06-15T06:00:00Z",
+    "latest_start": "2026-06-15T10:00:00Z",
+    "estimated_duration_minutes": 35
+  },
+  "flight_plan": {
+    "altitude_meters": 50,
+    "speed_ms": 5,
+    "overlap_forward_percent": 75,
+    "overlap_side_percent": 75,
+    "camera_settings": {
+      "mode": "MULTISPECTRAL",
+      "resolution": "2592x1944",
+      "iso": 200,
+      "shutter_speed": "1/1000"
+    },
+    "waypoints": [
+      {
+        "sequence": 1,
+        "coordinates": [40.2181, 37.9158, 50],
+        "action": "START_CAPTURE"
+      },
+      {
+        "sequence": 2,
+        "coordinates": [40.2190, 37.9158, 50],
+        "action": "TAKE_PHOTO"
+      },
+      {
+        "sequence": 3,
+        "coordinates": [40.2190, 37.9168, 50],
+        "action": "TAKE_PHOTO"
+      },
+      {
+        "sequence": 4,
+        "coordinates": [40.2181, 37.9168, 50],
+        "action": "STOP_CAPTURE"
+      }
+    ]
+  },
+  "flight_data": {
+    "actual_start": "2026-06-15T07:15:00Z",
+    "actual_end": "2026-06-15T07:48:00Z",
+    "actual_duration_minutes": 33,
+    "images_captured": 487,
+    "flight_log_file": {
+      "uri": "s3://tarlaanaliz-missions/2026/06/mission_60a7f1b8c9d4e5f6a7b8c9d0/flight.log",
+      "sha256": "a3f2b8c9d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1",
+      "size_bytes": 245680,
+      "mime_type": "text/plain"
+    },
+    "weather_conditions": {
+      "temperature_celsius": 28,
+      "wind_speed_ms": 2.5,
+      "wind_direction_degrees": 135,
+      "cloud_cover_percent": 15,
+      "conditions": "PARTLY_CLOUDY"
+    }
+  },
+  "intake_manifest_id": "manifest_60a7f1b8c9d4e5f6a7b8c9d1",
+  "quarantine_status": "RELEASED",
+  "analysis_job_id": "job_60a7f1b8c9d4e5f6a7b8c9d2",
+  "result_ids": [
+    "result_60a7f1b8c9d4e5f6a7b8c9d3",
+    "result_60a7f1b8c9d4e5f6a7b8c9d4",
+    "result_60a7f1b8c9d4e5f6a7b8c9d5"
+  ],
+  "assigned_to": {
+    "assigned_at": "2026-06-10T14:30:00Z",
+    "accepted_at": "2026-06-10T15:45:00Z",
+    "assignment_method": "AUTO_ROUTING"
+  },
+  "notes": "Pamuk tarlası, ilk uçuş. Hava koşulları ideal. Tüm sensörler normal çalıştı.",
+  "tags": [
+    "cotton",
+    "gap",
+    "diyarbakir",
+    "multispectral",
+    "routine"
+  ],
+  "created_at": "2026-06-01T10:30:00Z",
+  "updated_at": "2026-06-15T08:00:00Z",
+  "metadata": {
+    "drone_model": "DJI Mavic 3M",
+    "pilot_experience_level": "EXPERT",
+    "battery_cycles": 12,
+    "firmware_version": "02.01.05.03"
+  }
+}

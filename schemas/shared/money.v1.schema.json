@@ -1,0 +1,111 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://api.tarlaanaliz.com/schemas/shared/money.v1.schema.json",
+  "title": "Money",
+  "description": "Monetary value with currency and tax information",
+  "type": "object",
+  "properties": {
+    "amount": {
+      "type": "number",
+      "minimum": 0,
+      "multipleOf": 0.01,
+      "description": "Monetary amount (minimum unit: 0.01)"
+    },
+    "currency": {
+      "$ref": "#/$defs/CurrencyCode",
+      "description": "ISO 4217 currency code"
+    },
+    "tax_included": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether the amount includes tax (KDV)"
+    },
+    "tax_rate": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 100,
+      "description": "Tax rate percentage (e.g., 20 for 20% KDV)"
+    },
+    "tax_amount": {
+      "type": "number",
+      "minimum": 0,
+      "multipleOf": 0.01,
+      "description": "Tax amount in the same currency"
+    },
+    "net_amount": {
+      "type": "number",
+      "minimum": 0,
+      "multipleOf": 0.01,
+      "description": "Net amount before tax"
+    },
+    "gross_amount": {
+      "type": "number",
+      "minimum": 0,
+      "multipleOf": 0.01,
+      "description": "Gross amount including tax"
+    }
+  },
+  "required": ["amount", "currency"],
+  "unevaluatedProperties": false,
+  "$defs": {
+    "CurrencyCode": {
+      "type": "string",
+      "title": "ISO 4217 Currency Code",
+      "description": "Three-letter currency code",
+      "enum": [
+        "TRY",
+        "USD",
+        "EUR",
+        "GBP"
+      ],
+      "default": "TRY"
+    }
+  },
+  "examples": [
+    {
+      "amount": 1500.00,
+      "currency": "TRY",
+      "tax_included": false,
+      "tax_rate": 20,
+      "tax_amount": 300.00,
+      "net_amount": 1500.00,
+      "gross_amount": 1800.00
+    },
+    {
+      "amount": 2400.00,
+      "currency": "TRY",
+      "tax_included": true,
+      "tax_rate": 20,
+      "tax_amount": 400.00,
+      "net_amount": 2000.00,
+      "gross_amount": 2400.00
+    },
+    {
+      "amount": 100.00,
+      "currency": "USD",
+      "tax_included": false
+    }
+  ],
+  "additionalInformation": {
+    "taxCalculation": {
+      "description": "Tax calculation formulas for Turkish VAT (KDV)",
+      "formulas": {
+        "net_to_gross": "gross_amount = net_amount * (1 + tax_rate/100)",
+        "gross_to_net": "net_amount = gross_amount / (1 + tax_rate/100)",
+        "tax_from_gross": "tax_amount = gross_amount - net_amount",
+        "tax_from_net": "tax_amount = net_amount * (tax_rate/100)"
+      },
+      "commonRates": {
+        "TR": {
+          "standard": 20,
+          "reduced": [10, 1],
+          "description": "Turkish VAT rates (KDV): 20% standard, 10% reduced, 1% super-reduced"
+        }
+      }
+    },
+    "precision": {
+      "description": "All amounts should be rounded to 2 decimal places",
+      "roundingMode": "HALF_UP"
+    }
+  }
+}

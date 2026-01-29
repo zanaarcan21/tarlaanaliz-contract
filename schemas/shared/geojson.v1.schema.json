@@ -1,0 +1,327 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://api.tarlaanaliz.com/schemas/shared/geojson.v1.schema.json",
+  "title": "GeoJSON",
+  "description": "GeoJSON Feature and FeatureCollection types for spatial data representation",
+  "type": "object",
+  "oneOf": [
+    {
+      "$ref": "#/$defs/Feature"
+    },
+    {
+      "$ref": "#/$defs/FeatureCollection"
+    },
+    {
+      "$ref": "#/$defs/Geometry"
+    }
+  ],
+  "$defs": {
+    "Feature": {
+      "type": "object",
+      "title": "GeoJSON Feature",
+      "description": "A GeoJSON Feature object representing a spatially bounded entity",
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "Feature",
+          "description": "GeoJSON type identifier"
+        },
+        "id": {
+          "oneOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "number"
+            }
+          ],
+          "description": "Optional feature identifier"
+        },
+        "geometry": {
+          "$ref": "#/$defs/Geometry",
+          "description": "Geometry object defining the feature's spatial extent"
+        },
+        "properties": {
+          "oneOf": [
+            {
+              "type": "object",
+              "additionalProperties": true
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "description": "Properties associated with the feature"
+        },
+        "bbox": {
+          "$ref": "#/$defs/BBox",
+          "description": "Optional bounding box"
+        }
+      },
+      "required": ["type", "geometry", "properties"],
+      "unevaluatedProperties": false
+    },
+    "FeatureCollection": {
+      "type": "object",
+      "title": "GeoJSON FeatureCollection",
+      "description": "A collection of GeoJSON Feature objects",
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "FeatureCollection",
+          "description": "GeoJSON type identifier"
+        },
+        "features": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Feature"
+          },
+          "description": "Array of Feature objects"
+        },
+        "bbox": {
+          "$ref": "#/$defs/BBox",
+          "description": "Optional bounding box encompassing all features"
+        }
+      },
+      "required": ["type", "features"],
+      "unevaluatedProperties": false
+    },
+    "Geometry": {
+      "type": "object",
+      "title": "GeoJSON Geometry",
+      "description": "Base geometry object",
+      "oneOf": [
+        {
+          "$ref": "#/$defs/Point"
+        },
+        {
+          "$ref": "#/$defs/LineString"
+        },
+        {
+          "$ref": "#/$defs/Polygon"
+        },
+        {
+          "$ref": "#/$defs/MultiPoint"
+        },
+        {
+          "$ref": "#/$defs/MultiLineString"
+        },
+        {
+          "$ref": "#/$defs/MultiPolygon"
+        },
+        {
+          "$ref": "#/$defs/GeometryCollection"
+        }
+      ]
+    },
+    "Point": {
+      "type": "object",
+      "title": "Point",
+      "description": "GeoJSON Point geometry",
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "Point"
+        },
+        "coordinates": {
+          "$ref": "#/$defs/Position",
+          "description": "Single position [longitude, latitude, altitude?]"
+        },
+        "bbox": {
+          "$ref": "#/$defs/BBox"
+        }
+      },
+      "required": ["type", "coordinates"],
+      "unevaluatedProperties": false
+    },
+    "LineString": {
+      "type": "object",
+      "title": "LineString",
+      "description": "GeoJSON LineString geometry",
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "LineString"
+        },
+        "coordinates": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Position"
+          },
+          "minItems": 2,
+          "description": "Array of positions forming a line"
+        },
+        "bbox": {
+          "$ref": "#/$defs/BBox"
+        }
+      },
+      "required": ["type", "coordinates"],
+      "unevaluatedProperties": false
+    },
+    "Polygon": {
+      "type": "object",
+      "title": "Polygon",
+      "description": "GeoJSON Polygon geometry (most common for field boundaries)",
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "Polygon"
+        },
+        "coordinates": {
+          "type": "array",
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/Position"
+            },
+            "minItems": 4,
+            "description": "Linear ring (first and last positions must be identical)"
+          },
+          "minItems": 1,
+          "description": "Array of linear rings (first is exterior, rest are holes)"
+        },
+        "bbox": {
+          "$ref": "#/$defs/BBox"
+        }
+      },
+      "required": ["type", "coordinates"],
+      "unevaluatedProperties": false
+    },
+    "MultiPoint": {
+      "type": "object",
+      "title": "MultiPoint",
+      "description": "GeoJSON MultiPoint geometry",
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "MultiPoint"
+        },
+        "coordinates": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Position"
+          },
+          "minItems": 1,
+          "description": "Array of positions"
+        },
+        "bbox": {
+          "$ref": "#/$defs/BBox"
+        }
+      },
+      "required": ["type", "coordinates"],
+      "unevaluatedProperties": false
+    },
+    "MultiLineString": {
+      "type": "object",
+      "title": "MultiLineString",
+      "description": "GeoJSON MultiLineString geometry",
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "MultiLineString"
+        },
+        "coordinates": {
+          "type": "array",
+          "items": {
+            "type": "array",
+            "items": {
+              "$ref": "#/$defs/Position"
+            },
+            "minItems": 2
+          },
+          "minItems": 1,
+          "description": "Array of LineString coordinate arrays"
+        },
+        "bbox": {
+          "$ref": "#/$defs/BBox"
+        }
+      },
+      "required": ["type", "coordinates"],
+      "unevaluatedProperties": false
+    },
+    "MultiPolygon": {
+      "type": "object",
+      "title": "MultiPolygon",
+      "description": "GeoJSON MultiPolygon geometry",
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "MultiPolygon"
+        },
+        "coordinates": {
+          "type": "array",
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/Position"
+              },
+              "minItems": 4
+            },
+            "minItems": 1
+          },
+          "minItems": 1,
+          "description": "Array of Polygon coordinate arrays"
+        },
+        "bbox": {
+          "$ref": "#/$defs/BBox"
+        }
+      },
+      "required": ["type", "coordinates"],
+      "unevaluatedProperties": false
+    },
+    "GeometryCollection": {
+      "type": "object",
+      "title": "GeometryCollection",
+      "description": "GeoJSON GeometryCollection",
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "GeometryCollection"
+        },
+        "geometries": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Geometry"
+          },
+          "minItems": 1,
+          "description": "Array of Geometry objects"
+        },
+        "bbox": {
+          "$ref": "#/$defs/BBox"
+        }
+      },
+      "required": ["type", "geometries"],
+      "unevaluatedProperties": false
+    },
+    "Position": {
+      "type": "array",
+      "title": "Position",
+      "description": "GeoJSON position [longitude, latitude, altitude?]",
+      "items": {
+        "type": "number"
+      },
+      "minItems": 2,
+      "maxItems": 3
+    },
+    "BBox": {
+      "type": "array",
+      "title": "Bounding Box",
+      "description": "Bounding box [west, south, east, north] or [west, south, min_alt, east, north, max_alt]",
+      "items": {
+        "type": "number"
+      },
+      "oneOf": [
+        {
+          "minItems": 4,
+          "maxItems": 4
+        },
+        {
+          "minItems": 6,
+          "maxItems": 6
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,293 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://api.tarlaanaliz.com/schemas/events/field_created.v1.schema.json",
+  "title": "FieldCreatedEvent",
+  "description": "Domain event: Field created. For audit trail, event replay, and system integration.",
+  "type": "object",
+  "properties": {
+    "event_id": {
+      "$ref": "#/$defs/EventId",
+      "description": "Unique event identifier"
+    },
+    "event_type": {
+      "type": "string",
+      "const": "field.created",
+      "description": "Event type (constant)"
+    },
+    "event_version": {
+      "type": "string",
+      "const": "1.0",
+      "description": "Event schema version"
+    },
+    "aggregate_type": {
+      "type": "string",
+      "const": "field",
+      "description": "Aggregate type"
+    },
+    "aggregate_id": {
+      "type": "string",
+      "pattern": "^field_[a-z0-9]{24}$",
+      "description": "Field identifier (aggregate root)"
+    },
+    "occurred_at": {
+      "$ref": "#/$defs/Timestamp",
+      "description": "When the event occurred (ISO 8601 UTC)"
+    },
+    "actor": {
+      "$ref": "#/$defs/Actor",
+      "description": "Who performed the action (actor_user_id is NOT PII)"
+    },
+    "data": {
+      "$ref": "#/$defs/FieldCreatedData",
+      "description": "Event-specific data"
+    },
+    "metadata": {
+      "$ref": "#/$defs/EventMetadata",
+      "description": "Event metadata (correlation, causation, etc.)"
+    }
+  },
+  "required": [
+    "event_id",
+    "event_type",
+    "event_version",
+    "aggregate_type",
+    "aggregate_id",
+    "occurred_at",
+    "actor",
+    "data"
+  ],
+  "unevaluatedProperties": false,
+  "$defs": {
+    "EventId": {
+      "type": "string",
+      "pattern": "^event_[a-z0-9]{24}$",
+      "description": "Event identifier format: event_{24-char-hex}"
+    },
+    "Actor": {
+      "type": "object",
+      "title": "Actor",
+      "description": "Who performed the action (PII-free)",
+      "properties": {
+        "actor_type": {
+          "type": "string",
+          "enum": ["USER", "SYSTEM", "SERVICE", "CRON"],
+          "description": "Actor type"
+        },
+        "actor_user_id": {
+          "type": "string",
+          "pattern": "^user_[a-z0-9]{24}$",
+          "description": "User ID (NOT PII - real identity in PII vault)"
+        },
+        "actor_service": {
+          "type": "string",
+          "description": "Service name (if actor_type = SERVICE)"
+        },
+        "actor_role": {
+          "type": "string",
+          "description": "Actor's role at event time (reference: enums/role.enum.v1.json)"
+        },
+        "actor_session_id": {
+          "type": "string",
+          "description": "Session identifier (for audit)"
+        },
+        "ip_address": {
+          "type": "string",
+          "description": "IP address (hashed for privacy)"
+        }
+      },
+      "required": ["actor_type"],
+      "unevaluatedProperties": false
+    },
+    "FieldCreatedData": {
+      "type": "object",
+      "title": "Field Created Data",
+      "description": "Data specific to field creation event",
+      "properties": {
+        "field": {
+          "type": "object",
+          "description": "Field snapshot at creation (reference: core/field.v1.schema.json)",
+          "properties": {
+            "field_id": {
+              "type": "string",
+              "pattern": "^field_[a-z0-9]{24}$"
+            },
+            "name": {
+              "type": "string"
+            },
+            "boundary": {
+              "type": "object",
+              "description": "GeoJSON Polygon"
+            },
+            "area_hectares": {
+              "type": "number",
+              "minimum": 0
+            },
+            "crop_type": {
+              "type": "string",
+              "description": "Crop type (reference: enums/crop_type.enum.v1.json)"
+            },
+            "season": {
+              "type": "object",
+              "description": "Season info"
+            },
+            "location": {
+              "type": "object",
+              "description": "Province, district, village"
+            }
+          },
+          "required": ["field_id", "name", "boundary", "area_hectares", "crop_type", "location"]
+        },
+        "ownership": {
+          "$ref": "#/$defs/OwnershipInfo",
+          "description": "Ownership information (who created, who owns)"
+        },
+        "registration_source": {
+          "type": "string",
+          "enum": ["WEB_APP", "MOBILE_APP", "COOP_IMPORT", "ADMIN_TOOL"],
+          "description": "How the field was registered"
+        }
+      },
+      "required": ["field", "ownership", "registration_source"],
+      "unevaluatedProperties": false
+    },
+    "OwnershipInfo": {
+      "type": "object",
+      "title": "Ownership Information",
+      "description": "Field ownership and access (PII-free)",
+      "properties": {
+        "owner_user_id": {
+          "type": "string",
+          "pattern": "^user_[a-z0-9]{24}$",
+          "description": "Owner user ID (NOT PII)"
+        },
+        "owner_type": {
+          "type": "string",
+          "enum": ["FARMER", "COOPERATIVE", "ORGANIZATION"],
+          "description": "Owner type"
+        },
+        "created_by_user_id": {
+          "type": "string",
+          "pattern": "^user_[a-z0-9]{24}$",
+          "description": "Who created the field record (may differ from owner)"
+        },
+        "created_on_behalf_of": {
+          "type": "boolean",
+          "description": "Whether created by proxy (e.g., cooperative for farmer)"
+        },
+        "organization_id": {
+          "type": "string",
+          "pattern": "^org_[a-z0-9]{24}$",
+          "description": "Organization ID (if applicable)"
+        }
+      },
+      "required": ["owner_user_id", "owner_type", "created_by_user_id"],
+      "unevaluatedProperties": false
+    },
+    "EventMetadata": {
+      "type": "object",
+      "title": "Event Metadata",
+      "description": "Event correlation and tracing metadata",
+      "properties": {
+        "correlation_id": {
+          "type": "string",
+          "description": "Correlation ID for tracing related events"
+        },
+        "causation_id": {
+          "type": "string",
+          "description": "ID of event/command that caused this event"
+        },
+        "trace_id": {
+          "type": "string",
+          "description": "Distributed tracing ID"
+        },
+        "partition_key": {
+          "type": "string",
+          "description": "Event stream partition key (typically aggregate_id)"
+        },
+        "sequence_number": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Sequence number within aggregate"
+        },
+        "source_service": {
+          "type": "string",
+          "description": "Service that emitted the event"
+        }
+      },
+      "unevaluatedProperties": false
+    },
+    "Timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 timestamp (UTC)"
+    }
+  },
+  "examples": [
+    {
+      "event_id": "event_60a7f1b8c9d4e5f6a7b8c9e0",
+      "event_type": "field.created",
+      "event_version": "1.0",
+      "aggregate_type": "field",
+      "aggregate_id": "field_507f1f77bcf86cd799439011",
+      "occurred_at": "2026-01-15T10:30:00Z",
+      "actor": {
+        "actor_type": "USER",
+        "actor_user_id": "user_60a7f1b8c9d4e5f6a7b8c9d0",
+        "actor_role": "FARMER",
+        "actor_session_id": "session_abc123",
+        "ip_address": "sha256:a3f2b8c9..."
+      },
+      "data": {
+        "field": {
+          "field_id": "field_507f1f77bcf86cd799439011",
+          "name": "Güneydoğu Tarlası",
+          "boundary": {
+            "type": "Polygon",
+            "coordinates": [
+              [
+                [40.2181, 37.9158],
+                [40.2190, 37.9158],
+                [40.2190, 37.9168],
+                [40.2181, 37.9168],
+                [40.2181, 37.9158]
+              ]
+            ]
+          },
+          "area_hectares": 10.2,
+          "crop_type": "COTTON",
+          "season": {
+            "year": 2026,
+            "season_type": "SPRING",
+            "planting_date": "2026-04-15"
+          },
+          "location": {
+            "province": "Diyarbakır",
+            "district": "Çermik",
+            "village": "Örnek Köy"
+          }
+        },
+        "ownership": {
+          "owner_user_id": "user_60a7f1b8c9d4e5f6a7b8c9d0",
+          "owner_type": "FARMER",
+          "created_by_user_id": "user_60a7f1b8c9d4e5f6a7b8c9d0",
+          "created_on_behalf_of": false
+        },
+        "registration_source": "WEB_APP"
+      },
+      "metadata": {
+        "correlation_id": "corr_abc123",
+        "trace_id": "trace_xyz789",
+        "partition_key": "field_507f1f77bcf86cd799439011",
+        "sequence_number": 0,
+        "source_service": "field-service"
+      }
+    }
+  ],
+  "notes": {
+    "pii_free": "actor_user_id and owner_user_id are NOT PII. Real identities are in PII vault (user_pii.v1.schema.json).",
+    "immutability": "Events are immutable. Once published, they cannot be changed. Only new events can be added.",
+    "event_sourcing": "This event can be used for event replay and state reconstruction.",
+    "ownership_tracking": "Field ownership is tracked via events, not embedded in field schema. Supports ownership transfer.",
+    "kr_reference": "Field creation flow in KR-013 (Çiftçi üyeliği ve tarla yönetimi)."
+  }
+}

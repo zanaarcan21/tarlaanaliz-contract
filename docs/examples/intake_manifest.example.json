@@ -1,0 +1,118 @@
+{
+  "id": "manifest_60a7f1b8c9d4e5f6a7b8c9d1",
+  "batch_id": "batch_60a7f1b8c9d4e5f6a7b8c9d0",
+  "mission_id": "mission_60a7f1b8c9d4e5f6a7b8c9d0",
+  "field_id": "field_507f1f77bcf86cd799439011",
+  "kiosk_id": "kiosk_diyarbakir_central_01",
+  "operator_id": "user_60a7f1b8c9d4e5f6a7b8c9d3",
+  "card_id": "SANDISK_32GB_SN987654321",
+  "files": [
+    {
+      "path": "DCIM/100MEDIA/DJI_0001.JPG",
+      "name": "DJI_0001.JPG",
+      "size_bytes": 5242880,
+      "sha256": "a3f2b8c9d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1",
+      "mime_type": "image/jpeg",
+      "extension": ".jpg",
+      "created_at": "2026-06-15T07:15:23Z",
+      "exif_data": {
+        "GPS": {
+          "latitude": 37.9158,
+          "longitude": 40.2181,
+          "altitude": 50.2
+        },
+        "Camera": {
+          "make": "DJI",
+          "model": "Mavic 3M",
+          "iso": 200,
+          "shutter_speed": "1/1000"
+        }
+      }
+    },
+    {
+      "path": "DCIM/100MEDIA/DJI_0002.JPG",
+      "name": "DJI_0002.JPG",
+      "size_bytes": 5198720,
+      "sha256": "b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1a2b3c4d5e6f7a8b9c0d1e2f3a4b5",
+      "mime_type": "image/jpeg",
+      "extension": ".jpg",
+      "created_at": "2026-06-15T07:15:28Z"
+    },
+    {
+      "path": "FLIGHT_LOGS/FLIGHT_001.txt",
+      "name": "FLIGHT_001.txt",
+      "size_bytes": 245680,
+      "sha256": "c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6",
+      "mime_type": "text/plain",
+      "extension": ".txt",
+      "created_at": "2026-06-15T07:48:15Z"
+    }
+  ],
+  "total_size_bytes": 2515845120,
+  "total_files": 487,
+  "av_scan_result": {
+    "scanned": true,
+    "clean": true,
+    "threats_detected": 0,
+    "threat_details": [],
+    "scanner_name": "ClamAV",
+    "scanner_version": "1.0.4",
+    "signature_version": "27304/2026-06-15",
+    "scan_started_at": "2026-06-15T08:00:00Z",
+    "scan_completed_at": "2026-06-15T08:02:15Z"
+  },
+  "signature": {
+    "algorithm": "SHA256-RSA",
+    "value": "MEUCIQDx1y2z3a4b5c6d7e8f9g0h1i2j3k4l5m6n7o8p9q0r1s2t3u4v5w6x7y8z9A==",
+    "certificate_thumbprint": "b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1a2b3c4d5e6f7a8b9c0d1e2f3a4b5",
+    "signed_at": "2026-06-15T08:02:30Z"
+  },
+  "chain_of_custody": {
+    "origin": "DJI Mavic 3M SN:1581F6HGBC0123",
+    "captured_by": "user_60a7f1b8c9d4e5f6a7b8c9d0",
+    "captured_at": "2026-06-15T07:15:00Z",
+    "transferred_to_station_at": "2026-06-15T07:55:00Z",
+    "verified_by": "user_60a7f1b8c9d4e5f6a7b8c9d3",
+    "verified_at": "2026-06-15T08:00:00Z",
+    "custody_events": [
+      {
+        "event_type": "CAPTURED",
+        "actor": "user_60a7f1b8c9d4e5f6a7b8c9d0",
+        "location": "field_507f1f77bcf86cd799439011",
+        "timestamp": "2026-06-15T07:15:00Z",
+        "notes": "Flight completed successfully"
+      },
+      {
+        "event_type": "TRANSFERRED",
+        "actor": "user_60a7f1b8c9d4e5f6a7b8c9d0",
+        "location": "kiosk_diyarbakir_central_01",
+        "timestamp": "2026-06-15T07:55:00Z",
+        "notes": "SD card handed to station operator"
+      },
+      {
+        "event_type": "RECEIVED",
+        "actor": "user_60a7f1b8c9d4e5f6a7b8c9d3",
+        "location": "kiosk_diyarbakir_central_01",
+        "timestamp": "2026-06-15T07:56:00Z",
+        "notes": "SD card received and logged"
+      },
+      {
+        "event_type": "VERIFIED",
+        "actor": "user_60a7f1b8c9d4e5f6a7b8c9d3",
+        "location": "kiosk_diyarbakir_central_01",
+        "timestamp": "2026-06-15T08:00:00Z",
+        "notes": "Hash verification completed"
+      }
+    ]
+  },
+  "metadata": {
+    "drone_model": "DJI Mavic 3M",
+    "firmware_version": "02.01.05.03",
+    "flight_log_present": true,
+    "image_count": 486,
+    "video_count": 0,
+    "other_count": 1
+  },
+  "created_at": "2026-06-15T08:02:30Z",
+  "expires_at": "2026-06-22T08:02:30Z"
+}

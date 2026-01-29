@@ -1,0 +1,283 @@
+# OpenAPI Schema Bridge for TarlaAnaliz
+# References to JSON Schema files (single source of truth)
+# OpenAPI 3.1 supports JSON Schema Draft 2020-12
+
+components:
+  schemas:
+    # ==================== Shared Schemas ====================
+    
+    GeoJsonPoint:
+      $ref: '../../schemas/shared/geojson.v1.schema.json#/$defs/Point'
+    
+    GeoJsonPolygon:
+      $ref: '../../schemas/shared/geojson.v1.schema.json#/$defs/Polygon'
+    
+    GeoJsonMultiPolygon:
+      $ref: '../../schemas/shared/geojson.v1.schema.json#/$defs/MultiPolygon'
+    
+    Address:
+      $ref: '../../schemas/shared/address.v1.schema.json'
+    
+    Money:
+      $ref: '../../schemas/shared/money.v1.schema.json'
+    
+    # ==================== Enums ====================
+    
+    CropType:
+      type: string
+      enum:
+        - COTTON
+        - PISTACHIO
+        - MAIZE
+        - WHEAT
+        - SUNFLOWER
+        - GRAPE
+        - HAZELNUT
+        - OLIVE
+        - RED_LENTIL
+      description: Crop type (reference enums/crop_type.enum.v1.json - supported crops)
+    
+    AnalysisType:
+      type: string
+      enum:
+        - HEALTH
+        - DISEASE
+        - PEST
+        - FUNGUS
+        - WEED
+        - WATER_STRESS
+        - NITROGEN_STRESS
+      description: Analysis type (reference enums/analysis_type.enum.v1.json - KR-002: 7 map layers)
+    
+    Role:
+      type: string
+      enum:
+        - FARMER
+        - PILOT
+        - IL_OPERATOR
+        - COOP_OWNER
+        - COOP_ADMIN
+        - COOP_AGRONOMIST
+        - COOP_VIEWER
+        - PLATFORM_ADMIN
+        - CENTRAL_ADMIN
+        - AUDITOR
+        - SUPPORT
+      description: User role (reference enums/role.enum.v1.json)
+    
+    MissionStatus:
+      type: string
+      enum:
+        - DRAFT
+        - PENDING_ASSIGNMENT
+        - ASSIGNED
+        - ACCEPTED
+        - IN_PROGRESS
+        - DATA_COLLECTED
+        - UPLOADING
+        - UPLOADED
+        - INTAKE_COMPLETE
+        - QUARANTINE
+        - ANALYZING
+        - COMPLETED
+        - FAILED
+        - CANCELLED
+        - REJECTED
+        - EXPIRED
+      description: Mission status (reference enums/mission_status.enum.v1.json)
+    
+    # ==================== Core Entities ====================
+    
+    Field:
+      $ref: '../../schemas/core/field.v1.schema.json'
+    
+    Mission:
+      $ref: '../../schemas/core/mission.v1.schema.json'
+    
+    User:
+      $ref: '../../schemas/core/user.v1.schema.json'
+    
+    UserPII:
+      $ref: '../../schemas/core/user_pii.v1.schema.json'
+    
+    # ==================== Edge Entities ====================
+    
+    IntakeManifest:
+      $ref: '../../schemas/edge/intake_manifest.v1.schema.json'
+    
+    EdgeMetadata:
+      $ref: '../../schemas/edge/edge_metadata.v1.schema.json'
+    
+    QuarantineEvent:
+      $ref: '../../schemas/edge/quarantine_event.v1.schema.json'
+    
+    # ==================== Worker Entities ====================
+    
+    AnalysisJob:
+      $ref: '../../schemas/worker/analysis_job.v1.schema.json'
+    
+    AnalysisResult:
+      $ref: '../../schemas/worker/analysis_result.v1.schema.json'
+    
+    # ==================== Events ====================
+    
+    FieldCreatedEvent:
+      $ref: '../../schemas/events/field_created.v1.schema.json'
+    
+    MissionAssignedEvent:
+      $ref: '../../schemas/events/mission_assigned.v1.schema.json'
+    
+    AnalysisCompletedEvent:
+      $ref: '../../schemas/events/analysis_completed.v1.schema.json'
+    
+    # ==================== Platform Entities ====================
+    
+    PriceBook:
+      $ref: '../../schemas/platform/pricing.v1.schema.json'
+    
+    PayrollRecord:
+      $ref: '../../schemas/platform/payroll.v1.schema.json'
+    
+    LayerRegistry:
+      $ref: '../../schemas/platform/layer_registry.v1.schema.json'
+    
+    # ==================== Request/Response Bodies ====================
+    
+    # Authentication
+    LoginRequest:
+      type: object
+      properties:
+        phone:
+          type: string
+          pattern: '^\+90[1-9][0-9]{9}$'
+          description: Phone number in E.164 format (+90 + 10 digits)
+          example: "+905432120210"
+        pin:
+          type: string
+          pattern: '^[0-9]{6}$'
+          description: 6-digit PIN
+          example: "123456"
+      required:
+        - phone
+        - pin
+    
+    LoginResponse:
+      type: object
+      properties:
+        session_token:
+          type: string
+          description: Session token (JWT)
+          example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+        refresh_token:
+          type: string
+          description: Refresh token
+          example: "refresh_abc123..."
+        expires_in:
+          type: integer
+          description: Token expiry in seconds
+          example: 86400
+        user:
+          type: object
+          properties:
+            user_id:
+              type: string
+              example: "user_60a7f1b8c9d4e5f6a7b8c9d0"
+            role:
+              $ref: '#/components/schemas/Role'
+            permissions:
+              type: array
+              items:
+                type: string
+              example: ["field:read", "field:write", "mission:read"]
+      required:
+        - session_token
+        - expires_in
+        - user
+    
+    # Field creation
+    CreateFieldRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 200
+          example: "Güneydoğu Tarlası"
+        boundary:
+          $ref: '#/components/schemas/GeoJsonPolygon'
+        crop_type:
+          $ref: '#/components/schemas/CropType'
+        season:
+          type: object
+          properties:
+            year:
+              type: integer
+              minimum: 2020
+              maximum: 2100
+              example: 2026
+            season_type:
+              type: string
+              enum: [SPRING, SUMMER, FALL, WINTER]
+              example: SPRING
+            planting_date:
+              type: string
+              format: date
+              example: "2026-04-15"
+        location:
+          $ref: '#/components/schemas/Address'
+      required:
+        - name
+        - boundary
+        - crop_type
+        - location
+    
+    # Mission creation
+    CreateMissionRequest:
+      type: object
+      properties:
+        field_id:
+          type: string
+          pattern: '^field_[a-z0-9]{24}$'
+          example: "field_507f1f77bcf86cd799439011"
+        analysis_types:
+          type: array
+          items:
+            $ref: '#/components/schemas/AnalysisType'
+          minItems: 1
+          example: ["HEALTH", "DISEASE", "PEST"]
+        scheduled_date:
+          type: string
+          format: date
+          example: "2026-06-15"
+        priority:
+          type: string
+          enum: [LOW, NORMAL, HIGH, URGENT]
+          default: NORMAL
+          example: NORMAL
+      required:
+        - field_id
+        - analysis_types
+        - scheduled_date
+    
+    # List response wrapper
+    ListResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            type: object
+          description: Array of resources
+        meta:
+          $ref: '../components/responses.yaml#/components/schemas/PaginationMeta'
+      required:
+        - data
+        - meta
+
+# Notes:
+# - OpenAPI 3.1 fully supports JSON Schema Draft 2020-12
+# - All entity schemas reference JSON Schema files (single source of truth)
+# - Enums are inlined here for OpenAPI tooling compatibility
+# - Request/Response bodies are defined here (API-specific)
+# - Shared components (GeoJSON, Address, Money) are referenced
+# - File paths are relative to this file's location

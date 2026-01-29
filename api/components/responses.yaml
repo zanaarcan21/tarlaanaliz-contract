@@ -1,0 +1,352 @@
+# Common API Responses for TarlaAnaliz
+# Standard success/error response templates
+
+components:
+  responses:
+    # ==================== Success Responses ====================
+    
+    Success:
+      description: Operation successful
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              success:
+                type: boolean
+                example: true
+              message:
+                type: string
+                example: "Operation completed successfully"
+    
+    Created:
+      description: Resource created successfully
+      headers:
+        Location:
+          description: URL of created resource
+          schema:
+            type: string
+            format: uri
+            example: /api/v1/fields/field_507f1f77bcf86cd799439011
+        ETag:
+          description: Entity tag for caching
+          schema:
+            type: string
+            example: '"abc123"'
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              id:
+                type: string
+                description: Created resource ID
+                example: field_507f1f77bcf86cd799439011
+              created_at:
+                type: string
+                format: date-time
+                example: "2026-01-15T10:30:00Z"
+    
+    Updated:
+      description: Resource updated successfully
+      headers:
+        ETag:
+          description: New entity tag
+          schema:
+            type: string
+            example: '"def456"'
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              id:
+                type: string
+                example: field_507f1f77bcf86cd799439011
+              updated_at:
+                type: string
+                format: date-time
+                example: "2026-01-15T10:35:00Z"
+    
+    Deleted:
+      description: Resource deleted successfully
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              id:
+                type: string
+                example: field_507f1f77bcf86cd799439011
+              deleted_at:
+                type: string
+                format: date-time
+                example: "2026-01-15T10:40:00Z"
+    
+    NoContent:
+      description: Operation successful, no content to return
+    
+    # ==================== Error Responses ====================
+    
+    BadRequest:
+      description: Bad request - invalid input
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            error:
+              code: BAD_REQUEST
+              message: "Invalid field geometry: polygon must be closed"
+              details:
+                field: geometry
+                constraint: "First and last coordinates must be identical"
+              request_id: req_abc123
+              timestamp: "2026-01-15T10:30:00Z"
+    
+    Unauthorized:
+      description: Authentication required or failed
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            error:
+              code: UNAUTHORIZED
+              message: "Authentication required. Please provide valid session token."
+              details:
+                hint: "Use POST /auth/login to obtain session token"
+              request_id: req_abc123
+              timestamp: "2026-01-15T10:30:00Z"
+    
+    Forbidden:
+      description: Insufficient permissions
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            error:
+              code: FORBIDDEN
+              message: "Insufficient permissions to access this resource"
+              details:
+                required_permission: "field:write"
+                user_role: "FARMER"
+                hint: "This operation requires admin privileges"
+              request_id: req_abc123
+              timestamp: "2026-01-15T10:30:00Z"
+    
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            error:
+              code: NOT_FOUND
+              message: "Field not found"
+              details:
+                resource_type: "field"
+                resource_id: "field_507f1f77bcf86cd799439011"
+              request_id: req_abc123
+              timestamp: "2026-01-15T10:30:00Z"
+    
+    Conflict:
+      description: Resource conflict (e.g., duplicate, constraint violation)
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            error:
+              code: CONFLICT
+              message: "Field already exists with same location"
+              details:
+                constraint: "unique_field_location"
+                existing_field_id: "field_507f1f77bcf86cd799439010"
+                conflict_fields:
+                  - province
+                  - district
+                  - village
+                  - parcel
+              request_id: req_abc123
+              timestamp: "2026-01-15T10:30:00Z"
+    
+    UnprocessableEntity:
+      description: Validation error (semantic errors in otherwise valid input)
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            error:
+              code: UNPROCESSABLE_ENTITY
+              message: "Validation failed"
+              details:
+                validation_errors:
+                  - field: area_hectares
+                    message: "Area cannot exceed 1000 hectares"
+                    constraint: "max_area"
+                  - field: crop_type
+                    message: "TOMATO not supported (supported crops: COTTON, PISTACHIO, MAIZE, WHEAT, SUNFLOWER, GRAPE, HAZELNUT, OLIVE, RED_LENTIL)"
+                    constraint: "allowed_crop_types"
+              request_id: req_abc123
+              timestamp: "2026-01-15T10:30:00Z"
+    
+    TooManyRequests:
+      description: Rate limit exceeded
+      headers:
+        X-RateLimit-Limit:
+          description: Request limit per window
+          schema:
+            type: integer
+            example: 100
+        X-RateLimit-Remaining:
+          description: Remaining requests in window
+          schema:
+            type: integer
+            example: 0
+        X-RateLimit-Reset:
+          description: Window reset time (Unix timestamp)
+          schema:
+            type: integer
+            example: 1640001600
+        Retry-After:
+          description: Seconds until retry allowed
+          schema:
+            type: integer
+            example: 60
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            error:
+              code: RATE_LIMIT_EXCEEDED
+              message: "Rate limit exceeded. Please retry after 60 seconds."
+              details:
+                limit: 100
+                window: "1 minute"
+                retry_after: 60
+              request_id: req_abc123
+              timestamp: "2026-01-15T10:30:00Z"
+    
+    InternalServerError:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            error:
+              code: INTERNAL_SERVER_ERROR
+              message: "An unexpected error occurred. Our team has been notified."
+              details:
+                incident_id: "inc_xyz789"
+              request_id: req_abc123
+              timestamp: "2026-01-15T10:30:00Z"
+    
+    ServiceUnavailable:
+      description: Service temporarily unavailable
+      headers:
+        Retry-After:
+          description: Seconds until service expected to be available
+          schema:
+            type: integer
+            example: 300
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            error:
+              code: SERVICE_UNAVAILABLE
+              message: "Service temporarily unavailable. Scheduled maintenance."
+              details:
+                maintenance_window:
+                  start: "2026-01-15T02:00:00Z"
+                  end: "2026-01-15T04:00:00Z"
+                retry_after: 300
+              request_id: req_abc123
+              timestamp: "2026-01-15T10:30:00Z"
+
+  schemas:
+    # Error response schema
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: object
+          properties:
+            code:
+              type: string
+              description: Machine-readable error code
+              example: VALIDATION_ERROR
+            message:
+              type: string
+              description: Human-readable error message
+              example: "Validation failed"
+            details:
+              type: object
+              description: Additional error details
+              additionalProperties: true
+            request_id:
+              type: string
+              description: Request ID for tracking/debugging
+              example: req_abc123
+            timestamp:
+              type: string
+              format: date-time
+              description: Error timestamp
+              example: "2026-01-15T10:30:00Z"
+          required:
+            - code
+            - message
+            - request_id
+            - timestamp
+      required:
+        - error
+    
+    # Pagination metadata
+    PaginationMeta:
+      type: object
+      properties:
+        page:
+          type: integer
+          minimum: 1
+          example: 1
+        page_size:
+          type: integer
+          minimum: 1
+          example: 20
+        total_items:
+          type: integer
+          minimum: 0
+          example: 150
+        total_pages:
+          type: integer
+          minimum: 0
+          example: 8
+        has_next:
+          type: boolean
+          example: true
+        has_previous:
+          type: boolean
+          example: false
+        next_cursor:
+          type: string
+          nullable: true
+          example: cursor_abc123
+      required:
+        - page
+        - page_size
+        - total_items
+        - total_pages
+
+# Notes:
+# - All error responses include request_id for tracking
+# - Validation errors provide field-level details
+# - Rate limiting headers follow standard conventions
+# - ETag support for optimistic locking
+# - Pagination metadata consistent across all list endpoints

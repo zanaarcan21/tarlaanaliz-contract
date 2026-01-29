@@ -1,0 +1,612 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://api.tarlaanaliz.com/schemas/platform/layer_registry.v1.schema.json",
+  "title": "LayerRegistry",
+  "description": "Layer registry: standardized styling and legend for map layers (per KR-002 and KR-064). Single source of truth for layer visualization.",
+  "type": "object",
+  "properties": {
+    "id": {
+      "$ref": "#/$defs/RegistryId",
+      "description": "Unique registry identifier"
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$",
+      "description": "Registry version (semantic versioning)"
+    },
+    "layers": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/LayerStyle"
+      },
+      "minItems": 1,
+      "description": "Layer style definitions (per KR-002: 7 map layers)"
+    },
+    "created_at": {
+      "$ref": "#/$defs/Timestamp",
+      "description": "Registry creation timestamp"
+    },
+    "updated_at": {
+      "$ref": "#/$defs/Timestamp",
+      "description": "Last update timestamp"
+    }
+  },
+  "required": ["id", "version", "layers", "created_at", "updated_at"],
+  "unevaluatedProperties": false,
+  "$defs": {
+    "RegistryId": {
+      "type": "string",
+      "pattern": "^registry_[a-z0-9]{24}$",
+      "description": "Registry identifier format: registry_{24-char-hex}"
+    },
+    "LayerStyle": {
+      "type": "object",
+      "title": "Layer Style",
+      "description": "Style definition for a map layer type (per KR-002)",
+      "properties": {
+        "style_id": {
+          "type": "string",
+          "description": "Unique style identifier (referenced by analysis_result.layers[].style_ref)"
+        },
+        "analysis_type": {
+          "type": "string",
+          "description": "Analysis type (reference: enums/analysis_type.enum.v1.json - KR-002: 7 types)"
+        },
+        "display_name": {
+          "$ref": "#/$defs/LocalizedString",
+          "description": "Display name (localized)"
+        },
+        "color": {
+          "$ref": "#/$defs/ColorDefinition",
+          "description": "Primary color (per KR-002: specific color for each layer)"
+        },
+        "pattern": {
+          "$ref": "#/$defs/PatternDefinition",
+          "description": "Pattern/texture (per KR-002: some layers have patterns)"
+        },
+        "legend": {
+          "$ref": "#/$defs/Legend",
+          "description": "Legend items for this layer"
+        },
+        "opacity": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "default": 0.7,
+          "description": "Default opacity (0-1)"
+        },
+        "priority": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Layer priority (higher = on top per KR-064)"
+        },
+        "icon": {
+          "type": "string",
+          "description": "Icon name or URL (for accessibility per KR-064)"
+        },
+        "accessible": {
+          "type": "boolean",
+          "default": true,
+          "description": "Accessibility features enabled (per KR-064: ikon + desen zorunlu)"
+        }
+      },
+      "required": [
+        "style_id",
+        "analysis_type",
+        "display_name",
+        "color",
+        "legend",
+        "priority",
+        "accessible"
+      ],
+      "unevaluatedProperties": false
+    },
+    "ColorDefinition": {
+      "type": "object",
+      "title": "Color Definition",
+      "description": "Color definition with multiple formats",
+      "properties": {
+        "hex": {
+          "type": "string",
+          "pattern": "^#[0-9A-Fa-f]{6}$",
+          "description": "Hex color code (e.g., #00FF00)"
+        },
+        "rgb": {
+          "type": "object",
+          "properties": {
+            "r": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 255
+            },
+            "g": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 255
+            },
+            "b": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 255
+            }
+          },
+          "required": ["r", "g", "b"],
+          "unevaluatedProperties": false
+        },
+        "name": {
+          "type": "string",
+          "description": "Human-readable color name (per KR-002: Yeşil, Turuncu, etc.)"
+        }
+      },
+      "required": ["hex", "rgb", "name"],
+      "unevaluatedProperties": false
+    },
+    "PatternDefinition": {
+      "type": "object",
+      "title": "Pattern Definition",
+      "description": "Pattern/texture definition (per KR-002: some layers have patterns)",
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["SOLID", "DOTS", "WATER_DROPS", "CROSS_HATCH", "STRIPES", "CUSTOM"],
+          "description": "Pattern type"
+        },
+        "description": {
+          "$ref": "#/$defs/LocalizedString",
+          "description": "Pattern description (localized)"
+        },
+        "svg_path": {
+          "type": "string",
+          "description": "SVG pattern definition path"
+        },
+        "spacing": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Pattern spacing in pixels"
+        }
+      },
+      "required": ["type", "description"],
+      "unevaluatedProperties": false
+    },
+    "Legend": {
+      "type": "object",
+      "title": "Legend",
+      "description": "Legend for map layer",
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["CATEGORICAL", "GRADIENT", "THRESHOLD"],
+          "description": "Legend type"
+        },
+        "items": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/LegendItem"
+          },
+          "minItems": 1,
+          "description": "Legend items"
+        }
+      },
+      "required": ["type", "items"],
+      "unevaluatedProperties": false
+    },
+    "LegendItem": {
+      "type": "object",
+      "title": "Legend Item",
+      "properties": {
+        "label": {
+          "$ref": "#/$defs/LocalizedString",
+          "description": "Item label (localized)"
+        },
+        "color": {
+          "type": "string",
+          "pattern": "^#[0-9A-Fa-f]{6}$",
+          "description": "Item color (hex)"
+        },
+        "value": {
+          "description": "Associated value (for threshold/gradient legends)"
+        },
+        "range": {
+          "type": "object",
+          "properties": {
+            "min": {
+              "type": "number"
+            },
+            "max": {
+              "type": "number"
+            }
+          },
+          "description": "Value range (for threshold legends)"
+        }
+      },
+      "required": ["label", "color"],
+      "unevaluatedProperties": false
+    },
+    "LocalizedString": {
+      "type": "object",
+      "title": "Localized String",
+      "properties": {
+        "tr": {
+          "type": "string",
+          "description": "Turkish text"
+        },
+        "en": {
+          "type": "string",
+          "description": "English text"
+        }
+      },
+      "required": ["tr", "en"],
+      "unevaluatedProperties": false
+    },
+    "Timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 timestamp (UTC)"
+    }
+  },
+  "examples": [
+    {
+      "id": "registry_60a7f1b8c9d4e5f6a7b8c9d0",
+      "version": "1.0.0",
+      "layers": [
+        {
+          "style_id": "health_green_v1",
+          "analysis_type": "HEALTH",
+          "display_name": {
+            "tr": "Sağlık Haritası",
+            "en": "Health Map"
+          },
+          "color": {
+            "hex": "#00FF00",
+            "rgb": {
+              "r": 0,
+              "g": 255,
+              "b": 0
+            },
+            "name": "Yeşil (Green)"
+          },
+          "pattern": {
+            "type": "SOLID",
+            "description": {
+              "tr": "Düz",
+              "en": "Solid"
+            }
+          },
+          "legend": {
+            "type": "CATEGORICAL",
+            "items": [
+              {
+                "label": {
+                  "tr": "Mükemmel",
+                  "en": "Excellent"
+                },
+                "color": "#006400",
+                "value": "EXCELLENT"
+              },
+              {
+                "label": {
+                  "tr": "İyi",
+                  "en": "Good"
+                },
+                "color": "#00FF00",
+                "value": "GOOD"
+              },
+              {
+                "label": {
+                  "tr": "Orta",
+                  "en": "Fair"
+                },
+                "color": "#FFFF00",
+                "value": "FAIR"
+              },
+              {
+                "label": {
+                  "tr": "Zayıf",
+                  "en": "Poor"
+                },
+                "color": "#FFA500",
+                "value": "POOR"
+              },
+              {
+                "label": {
+                  "tr": "Kritik",
+                  "en": "Critical"
+                },
+                "color": "#FF0000",
+                "value": "CRITICAL"
+              }
+            ]
+          },
+          "opacity": 0.7,
+          "priority": 10,
+          "icon": "health-icon",
+          "accessible": true
+        },
+        {
+          "style_id": "disease_orange_v1",
+          "analysis_type": "DISEASE",
+          "display_name": {
+            "tr": "Hastalık Haritası",
+            "en": "Disease Map"
+          },
+          "color": {
+            "hex": "#FFA500",
+            "rgb": {
+              "r": 255,
+              "g": 165,
+              "b": 0
+            },
+            "name": "Turuncu (Orange)"
+          },
+          "pattern": {
+            "type": "SOLID",
+            "description": {
+              "tr": "Düz",
+              "en": "Solid"
+            }
+          },
+          "legend": {
+            "type": "CATEGORICAL",
+            "items": [
+              {
+                "label": {
+                  "tr": "Bakteriyel Yanıklık",
+                  "en": "Bacterial Blight"
+                },
+                "color": "#FF8C00"
+              },
+              {
+                "label": {
+                  "tr": "Yaprak Lekesi",
+                  "en": "Leaf Spot"
+                },
+                "color": "#FFA500"
+              },
+              {
+                "label": {
+                  "tr": "Koza Çürüklüğü",
+                  "en": "Boll Rot"
+                },
+                "color": "#FFB84D"
+              }
+            ]
+          },
+          "opacity": 0.8,
+          "priority": 20,
+          "icon": "disease-icon",
+          "accessible": true
+        },
+        {
+          "style_id": "pest_red_v1",
+          "analysis_type": "PEST",
+          "display_name": {
+            "tr": "Zararlı Böcek Haritası",
+            "en": "Pest Map"
+          },
+          "color": {
+            "hex": "#FF0000",
+            "rgb": {
+              "r": 255,
+              "g": 0,
+              "b": 0
+            },
+            "name": "Kırmızı (Red)"
+          },
+          "pattern": {
+            "type": "SOLID",
+            "description": {
+              "tr": "Düz",
+              "en": "Solid"
+            }
+          },
+          "legend": {
+            "type": "CATEGORICAL",
+            "items": [
+              {
+                "label": {
+                  "tr": "Pamuk Kurtçuğu",
+                  "en": "Cotton Bollworm"
+                },
+                "color": "#DC143C"
+              },
+              {
+                "label": {
+                  "tr": "Yaprak Biti",
+                  "en": "Aphid"
+                },
+                "color": "#FF0000"
+              }
+            ]
+          },
+          "opacity": 0.8,
+          "priority": 30,
+          "icon": "pest-icon",
+          "accessible": true
+        },
+        {
+          "style_id": "weed_yellow_dotted_v1",
+          "analysis_type": "WEED",
+          "display_name": {
+            "tr": "Yabancı Ot Haritası",
+            "en": "Weed Map"
+          },
+          "color": {
+            "hex": "#FFFF00",
+            "rgb": {
+              "r": 255,
+              "g": 255,
+              "b": 0
+            },
+            "name": "Sarı/Hardal (Yellow/Mustard)"
+          },
+          "pattern": {
+            "type": "DOTS",
+            "description": {
+              "tr": "Noktalı Desen",
+              "en": "Dotted Pattern"
+            },
+            "spacing": 5
+          },
+          "legend": {
+            "type": "CATEGORICAL",
+            "items": [
+              {
+                "label": {
+                  "tr": "Yüksek Yoğunluk",
+                  "en": "High Density"
+                },
+                "color": "#FFD700"
+              },
+              {
+                "label": {
+                  "tr": "Orta Yoğunluk",
+                  "en": "Medium Density"
+                },
+                "color": "#FFFF00"
+              },
+              {
+                "label": {
+                  "tr": "Düşük Yoğunluk",
+                  "en": "Low Density"
+                },
+                "color": "#FFFFE0"
+              }
+            ]
+          },
+          "opacity": 0.6,
+          "priority": 15,
+          "icon": "weed-icon",
+          "accessible": true
+        },
+        {
+          "style_id": "water_stress_blue_drops_v1",
+          "analysis_type": "WATER_STRESS",
+          "display_name": {
+            "tr": "Su Stresi Haritası",
+            "en": "Water Stress Map"
+          },
+          "color": {
+            "hex": "#0000FF",
+            "rgb": {
+              "r": 0,
+              "g": 0,
+              "b": 255
+            },
+            "name": "Mavi (Blue)"
+          },
+          "pattern": {
+            "type": "WATER_DROPS",
+            "description": {
+              "tr": "Damla Noktalı Desen",
+              "en": "Water Drop Pattern"
+            },
+            "spacing": 8
+          },
+          "legend": {
+            "type": "GRADIENT",
+            "items": [
+              {
+                "label": {
+                  "tr": "Su Stresi Yok",
+                  "en": "No Stress"
+                },
+                "color": "#ADD8E6",
+                "value": 0
+              },
+              {
+                "label": {
+                  "tr": "Hafif Stres",
+                  "en": "Mild Stress"
+                },
+                "color": "#4169E1",
+                "value": 50
+              },
+              {
+                "label": {
+                  "tr": "Şiddetli Stres",
+                  "en": "Severe Stress"
+                },
+                "color": "#00008B",
+                "value": 100
+              }
+            ]
+          },
+          "opacity": 0.7,
+          "priority": 25,
+          "icon": "water-stress-icon",
+          "accessible": true
+        },
+        {
+          "style_id": "nitrogen_stress_gray_crosshatch_v1",
+          "analysis_type": "NITROGEN_STRESS",
+          "display_name": {
+            "tr": "Azot Stresi Haritası",
+            "en": "Nitrogen Stress Map"
+          },
+          "color": {
+            "hex": "#D3D3D3",
+            "rgb": {
+              "r": 211,
+              "g": 211,
+              "b": 211
+            },
+            "name": "Soluk Gri (Light Gray)"
+          },
+          "pattern": {
+            "type": "CROSS_HATCH",
+            "description": {
+              "tr": "Çapraz Çizgili Desen",
+              "en": "Cross-hatched Pattern"
+            },
+            "spacing": 6
+          },
+          "legend": {
+            "type": "GRADIENT",
+            "items": [
+              {
+                "label": {
+                  "tr": "Yeterli Azot",
+                  "en": "Sufficient"
+                },
+                "color": "#F0F0F0",
+                "value": 0
+              },
+              {
+                "label": {
+                  "tr": "Hafif Eksiklik",
+                  "en": "Mild Deficiency"
+                },
+                "color": "#D3D3D3",
+                "value": 50
+              },
+              {
+                "label": {
+                  "tr": "Şiddetli Eksiklik",
+                  "en": "Severe Deficiency"
+                },
+                "color": "#808080",
+                "value": 100
+              }
+            ]
+          },
+          "opacity": 0.7,
+          "priority": 18,
+          "icon": "nitrogen-stress-icon",
+          "accessible": true
+        }
+      ],
+      "created_at": "2026-01-01T00:00:00Z",
+      "updated_at": "2026-01-01T00:00:00Z"
+    }
+  ],
+  "notes": {
+    "kr002_compliance": "All layer styles defined per KR-002 (Harita katmanı anlamları). Colors and patterns are EXACT per specification.",
+    "single_source": "Layer registry is SINGLE SOURCE OF TRUTH for layer styling. All components (web app, mobile app, reports) use this registry.",
+    "style_references": "analysis_result.layers[].style_ref references style_id in this registry (per KR-064).",
+    "accessibility": "Per KR-064: 'Erişilebilirlik için ikon + desen zorunludur'. All layers MUST have icon + pattern for accessibility.",
+    "priority_overlap": "Per KR-064: 'priority yüksek katman üstte görünür'. Higher priority layers render on top.",
+    "immutability": "Registry versions are immutable. Changes require new version. Clients cache registry by version.",
+    "localization": "All display strings are localized (TR + EN). Additional languages can be added.",
+    "kr_reference": "Layer registry specification in KR-064. Layer colors/patterns in KR-002."
+  }
+}

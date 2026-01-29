@@ -1,0 +1,260 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://api.tarlaanaliz.com/schemas/core/user_pii.v1.schema.json",
+  "title": "UserPII",
+  "description": "Minimum PII storage for user identity. CRITICAL: NO email/TCKN/OTP. Identity = phone + 6-digit PIN. This schema is stored ONLY in PII vault, never returned to clients.",
+  "type": "object",
+  "properties": {
+    "user_id": {
+      "$ref": "#/$defs/UserId",
+      "description": "Reference to user.v1 core record"
+    },
+    "phone": {
+      "$ref": "#/$defs/Phone",
+      "description": "Phone number (primary identity)"
+    },
+    "pin": {
+      "$ref": "#/$defs/Pin",
+      "description": "6-digit PIN (hashed)"
+    },
+    "pii_retention": {
+      "$ref": "#/$defs/PiiRetention",
+      "description": "PII retention and deletion metadata"
+    },
+    "audit": {
+      "$ref": "#/$defs/AuditMetadata",
+      "description": "Audit trail for PII access"
+    },
+    "created_at": {
+      "$ref": "#/$defs/Timestamp",
+      "description": "PII record creation timestamp"
+    },
+    "updated_at": {
+      "$ref": "#/$defs/Timestamp",
+      "description": "Last update timestamp"
+    }
+  },
+  "required": [
+    "user_id",
+    "phone",
+    "pin",
+    "pii_retention",
+    "created_at",
+    "updated_at"
+  ],
+  "unevaluatedProperties": false,
+  "$defs": {
+    "UserId": {
+      "type": "string",
+      "pattern": "^user_[a-z0-9]{24}$",
+      "description": "User identifier (links to user.v1)"
+    },
+    "Phone": {
+      "type": "object",
+      "title": "Phone Number",
+      "description": "Phone number storage (primary identity)",
+      "properties": {
+        "e164": {
+          "type": "string",
+          "pattern": "^\\+90[1-9][0-9]{9}$",
+          "description": "Phone number in E.164 format: +90 followed by 10 digits (e.g., +905432120210)"
+        },
+        "hash": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$",
+          "description": "SHA-256 hash of phone (for lookups without exposing full number)"
+        },
+        "last4": {
+          "type": "string",
+          "pattern": "^[0-9]{4}$",
+          "description": "Last 4 digits (for display purposes, e.g., ***4567)"
+        },
+        "country_code": {
+          "type": "string",
+          "pattern": "^\\+[1-9][0-9]{0,3}$",
+          "default": "+90",
+          "description": "Country calling code"
+        },
+        "verified": {
+          "type": "boolean",
+          "default": false,
+          "description": "Phone verification status"
+        },
+        "verified_at": {
+          "$ref": "#/$defs/Timestamp",
+          "description": "Phone verification timestamp"
+        }
+      },
+      "required": ["e164", "hash", "last4", "country_code", "verified"],
+      "unevaluatedProperties": false
+    },
+    "Pin": {
+      "type": "object",
+      "title": "6-Digit PIN",
+      "description": "PIN for authentication (always hashed)",
+      "properties": {
+        "hash": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$",
+          "description": "SHA-256 hash of PIN (NEVER store plaintext PIN)"
+        },
+        "algorithm": {
+          "type": "string",
+          "const": "SHA256",
+          "description": "Hashing algorithm"
+        },
+        "salt": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{32}$",
+          "description": "Salt used for hashing (16 bytes hex)"
+        },
+        "iterations": {
+          "type": "integer",
+          "minimum": 10000,
+          "default": 100000,
+          "description": "PBKDF2 iterations (if using PBKDF2)"
+        },
+        "created_at": {
+          "$ref": "#/$defs/Timestamp",
+          "description": "PIN creation timestamp"
+        },
+        "updated_at": {
+          "$ref": "#/$defs/Timestamp",
+          "description": "PIN last update timestamp"
+        },
+        "failed_attempts": {
+          "type": "integer",
+          "minimum": 0,
+          "default": 0,
+          "description": "Failed authentication attempts since last success"
+        },
+        "locked_until": {
+          "$ref": "#/$defs/Timestamp",
+          "description": "Account lock timestamp (if exceeded max failed attempts)"
+        }
+      },
+      "required": ["hash", "algorithm", "salt", "created_at", "updated_at", "failed_attempts"],
+      "unevaluatedProperties": false
+    },
+    "PiiRetention": {
+      "type": "object",
+      "title": "PII Retention Metadata",
+      "description": "KVKK/GDPR compliance metadata",
+      "properties": {
+        "retention_policy": {
+          "type": "string",
+          "enum": ["ACTIVE_USER", "INACTIVE_6M", "INACTIVE_1Y", "DELETION_REQUESTED", "LEGAL_HOLD"],
+          "default": "ACTIVE_USER",
+          "description": "Retention policy tag"
+        },
+        "deletion_requested_at": {
+          "$ref": "#/$defs/Timestamp",
+          "description": "User-requested deletion timestamp"
+        },
+        "scheduled_deletion_at": {
+          "$ref": "#/$defs/Timestamp",
+          "description": "Scheduled PII deletion timestamp (e.g., 30 days after request)"
+        },
+        "legal_hold": {
+          "type": "boolean",
+          "default": false,
+          "description": "Legal hold flag (prevents deletion)"
+        },
+        "legal_hold_reason": {
+          "type": "string",
+          "maxLength": 500,
+          "description": "Reason for legal hold"
+        },
+        "last_accessed_at": {
+          "$ref": "#/$defs/Timestamp",
+          "description": "Last PII access timestamp"
+        },
+        "access_count": {
+          "type": "integer",
+          "minimum": 0,
+          "default": 0,
+          "description": "Total PII access count"
+        }
+      },
+      "required": ["retention_policy"],
+      "unevaluatedProperties": false
+    },
+    "AuditMetadata": {
+      "type": "object",
+      "title": "Audit Metadata",
+      "description": "Audit trail for PII access",
+      "properties": {
+        "created_by": {
+          "type": "string",
+          "description": "User/system that created PII record"
+        },
+        "last_modified_by": {
+          "type": "string",
+          "description": "User/system that last modified PII"
+        },
+        "last_accessed_by": {
+          "type": "string",
+          "description": "User/system that last accessed PII"
+        },
+        "access_log_retention_days": {
+          "type": "integer",
+          "minimum": 90,
+          "default": 365,
+          "description": "How long to retain detailed access logs"
+        }
+      },
+      "unevaluatedProperties": false
+    },
+    "Timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 timestamp (UTC)"
+    }
+  },
+  "examples": [
+    {
+      "user_id": "user_507f191e810c19729de860ea",
+      "phone": {
+        "e164": "+905432120210",
+        "hash": "a3f2b8c9d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1",
+        "last4": "0210",
+        "country_code": "+90",
+        "verified": true,
+        "verified_at": "2026-01-10T12:00:00Z"
+      },
+      "pin": {
+        "hash": "b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1a2b3c4d5e6f7a8b9c0d1e2f3a4b5",
+        "algorithm": "SHA256",
+        "salt": "c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0",
+        "iterations": 100000,
+        "created_at": "2026-01-10T10:30:00Z",
+        "updated_at": "2026-01-10T10:30:00Z",
+        "failed_attempts": 0
+      },
+      "pii_retention": {
+        "retention_policy": "ACTIVE_USER",
+        "last_accessed_at": "2026-01-26T14:45:00Z",
+        "access_count": 47
+      },
+      "audit": {
+        "created_by": "system",
+        "last_modified_by": "user_507f191e810c19729de860ea",
+        "last_accessed_by": "auth_service"
+      },
+      "created_at": "2026-01-10T10:30:00Z",
+      "updated_at": "2026-01-10T10:30:00Z"
+    }
+  ],
+  "notes": {
+    "critical_pii_rules": "ABSOLUTE RULES: (1) NO email field, (2) NO TCKN field, (3) NO OTP storage, (4) This schema ONLY in PII vault, (5) NEVER return to clients",
+    "identity_model": "Identity = phone (E.164: +90 + 10 digits, e.g., +905432120210) + 6-digit PIN. PIN is ALWAYS hashed (SHA-256 + salt + PBKDF2).",
+    "verification_flow": "1) User enters phone + creates PIN, 2) System sends SMS with verification code (NOT stored), 3) User enters code, 4) phone.verified = true",
+    "authentication_flow": "1) User enters phone + PIN, 2) System hashes PIN, 3) Compare hash, 4) Generate JWT with user_id + roles",
+    "pii_vault": "This schema is stored in separate PII vault with: (a) encryption at rest, (b) audit logging, (c) access controls, (d) retention policies",
+    "masking": "When logging, ALWAYS mask: phone → +90***4567, PIN → never log",
+    "kvkk_gdpr": "PII retention policies enforce KVKK/GDPR: inactive users → deletion after retention period, user-requested deletion → 30-day grace period",
+    "kr_reference": "Identity and PII model defined in KR-050. Security requirements in KR-040, KR-066.",
+    "no_otp_storage": "OTP codes for SMS verification are NEVER stored. They are ephemeral (5-minute TTL) and validated immediately.",
+    "pin_reset": "PIN reset requires: (1) Phone re-verification via SMS, (2) New PIN creation, (3) All existing sessions invalidated"
+  }
+}

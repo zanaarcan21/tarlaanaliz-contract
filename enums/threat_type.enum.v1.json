@@ -1,0 +1,241 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://api.tarlaanaliz.com/enums/threat_type.enum.v1.json",
+  "title": "ThreatType",
+  "description": "Types of security threats detected during quarantine inspection",
+  "type": "string",
+  "enum": [
+    "MALWARE",
+    "HASH_MISMATCH",
+    "POLICY_VIOLATION",
+    "FILE_CORRUPTION",
+    "SUSPICIOUS_METADATA",
+    "UNAUTHORIZED_FILE_TYPE",
+    "SIZE_ANOMALY",
+    "TIMESTAMP_ANOMALY",
+    "DUPLICATE_SUBMISSION",
+    "TAMPERED_SIGNATURE",
+    "MISSING_MANIFEST",
+    "INVALID_GEOLOCATION",
+    "ANTIVIRUS_ALERT",
+    "UNKNOWN_ORIGIN",
+    "FAILED_INTEGRITY_CHECK"
+  ],
+  "metadata": {
+    "version": "1.0.0",
+    "lastUpdated": "2026-01-26",
+    "severityLevels": {
+      "CRITICAL": {
+        "description": "Immediate quarantine, requires manual review",
+        "threats": [
+          "MALWARE",
+          "TAMPERED_SIGNATURE",
+          "ANTIVIRUS_ALERT"
+        ],
+        "autoAction": "QUARANTINE",
+        "requiresManualReview": true
+      },
+      "HIGH": {
+        "description": "High risk, automated quarantine with notification",
+        "threats": [
+          "HASH_MISMATCH",
+          "POLICY_VIOLATION",
+          "UNAUTHORIZED_FILE_TYPE",
+          "SUSPICIOUS_METADATA"
+        ],
+        "autoAction": "QUARANTINE",
+        "requiresManualReview": true
+      },
+      "MEDIUM": {
+        "description": "Medium risk, may require investigation",
+        "threats": [
+          "FILE_CORRUPTION",
+          "SIZE_ANOMALY",
+          "TIMESTAMP_ANOMALY",
+          "INVALID_GEOLOCATION"
+        ],
+        "autoAction": "FLAG_FOR_REVIEW",
+        "requiresManualReview": false
+      },
+      "LOW": {
+        "description": "Low risk, logged but may proceed",
+        "threats": [
+          "DUPLICATE_SUBMISSION",
+          "MISSING_MANIFEST",
+          "UNKNOWN_ORIGIN",
+          "FAILED_INTEGRITY_CHECK"
+        ],
+        "autoAction": "LOG_WARNING",
+        "requiresManualReview": false
+      }
+    },
+    "threatDescriptions": {
+      "MALWARE": {
+        "description": "Malicious software detected in uploaded files",
+        "detection": "Antivirus scanner (ClamAV or similar)",
+        "response": "Immediate quarantine, notify security team",
+        "severity": "CRITICAL",
+        "sopReference": "SOP Section 3.2 - Antivirus Scanning"
+      },
+      "HASH_MISMATCH": {
+        "description": "File hash does not match manifest declaration",
+        "detection": "SHA-256 comparison between file and manifest",
+        "response": "Quarantine, request re-upload",
+        "severity": "HIGH",
+        "sopReference": "SOP Section 3.1 - Hash Verification"
+      },
+      "POLICY_VIOLATION": {
+        "description": "File violates organizational policy (e.g., wrong format, size)",
+        "detection": "Policy engine check",
+        "response": "Quarantine, notify uploader",
+        "severity": "HIGH",
+        "sopReference": "SOP Section 3.3 - Policy Enforcement"
+      },
+      "FILE_CORRUPTION": {
+        "description": "File appears corrupted or unreadable",
+        "detection": "File header/format validation",
+        "response": "Quarantine, request re-upload",
+        "severity": "MEDIUM",
+        "sopReference": "SOP Section 3.4 - File Integrity"
+      },
+      "SUSPICIOUS_METADATA": {
+        "description": "File metadata contains suspicious or malformed data",
+        "detection": "EXIF/metadata analysis",
+        "response": "Quarantine for manual review",
+        "severity": "HIGH",
+        "sopReference": "SOP Section 3.5 - Metadata Inspection"
+      },
+      "UNAUTHORIZED_FILE_TYPE": {
+        "description": "File type not in allowlist (e.g., .exe, .dll)",
+        "detection": "File extension and MIME type check",
+        "response": "Quarantine, reject upload",
+        "severity": "HIGH",
+        "sopReference": "SOP Section 3.3 - Allowlist Enforcement",
+        "allowedTypes": [".jpg", ".jpeg", ".tif", ".tiff", ".dng", ".raw", ".json", ".xml", ".kml"]
+      },
+      "SIZE_ANOMALY": {
+        "description": "File size outside expected range for file type",
+        "detection": "Size validation against expected ranges",
+        "response": "Flag for review, may proceed with warning",
+        "severity": "MEDIUM",
+        "sopReference": "SOP Section 3.6 - Size Validation"
+      },
+      "TIMESTAMP_ANOMALY": {
+        "description": "File timestamp inconsistent with mission timeline",
+        "detection": "Timestamp comparison with mission schedule",
+        "response": "Flag for review, investigate timing",
+        "severity": "MEDIUM",
+        "sopReference": "SOP Section 3.7 - Temporal Validation"
+      },
+      "DUPLICATE_SUBMISSION": {
+        "description": "Identical file already submitted (hash collision)",
+        "detection": "Hash lookup in database",
+        "response": "Log warning, skip duplicate processing",
+        "severity": "LOW",
+        "sopReference": "SOP Section 3.8 - Deduplication"
+      },
+      "TAMPERED_SIGNATURE": {
+        "description": "Digital signature verification failed",
+        "detection": "Cryptographic signature verification",
+        "response": "Immediate quarantine, security alert",
+        "severity": "CRITICAL",
+        "sopReference": "SOP Section 3.9 - Signature Verification"
+      },
+      "MISSING_MANIFEST": {
+        "description": "Upload lacks required manifest file",
+        "detection": "Manifest presence check",
+        "response": "Reject upload, request complete submission",
+        "severity": "LOW",
+        "sopReference": "SOP Section 2.4 - Manifest Requirement"
+      },
+      "INVALID_GEOLOCATION": {
+        "description": "GPS coordinates outside expected field boundaries",
+        "detection": "Geospatial validation against field geometry",
+        "response": "Flag for review, check mission assignment",
+        "severity": "MEDIUM",
+        "sopReference": "SOP Section 3.10 - Geospatial Validation"
+      },
+      "ANTIVIRUS_ALERT": {
+        "description": "Antivirus software flagged file as suspicious",
+        "detection": "AV scan result",
+        "response": "Immediate quarantine, full scan",
+        "severity": "CRITICAL",
+        "sopReference": "SOP Section 3.2 - Antivirus Scanning"
+      },
+      "UNKNOWN_ORIGIN": {
+        "description": "File origin cannot be verified (missing pilot ID, device ID)",
+        "detection": "Origin metadata check",
+        "response": "Flag for review, verify chain of custody",
+        "severity": "LOW",
+        "sopReference": "SOP Section 3.11 - Origin Verification"
+      },
+      "FAILED_INTEGRITY_CHECK": {
+        "description": "General integrity check failed (checksums, structure)",
+        "detection": "Integrity validation",
+        "response": "Flag for review or re-upload",
+        "severity": "LOW",
+        "sopReference": "SOP Section 3.4 - File Integrity"
+      }
+    },
+    "displayNames": {
+      "tr": {
+        "MALWARE": "Zararlı Yazılım",
+        "HASH_MISMATCH": "Hash Uyumsuzluğu",
+        "POLICY_VIOLATION": "Politika İhlali",
+        "FILE_CORRUPTION": "Dosya Bozulması",
+        "SUSPICIOUS_METADATA": "Şüpheli Metadata",
+        "UNAUTHORIZED_FILE_TYPE": "Yetkisiz Dosya Türü",
+        "SIZE_ANOMALY": "Boyut Anomalisi",
+        "TIMESTAMP_ANOMALY": "Zaman Damgası Anomalisi",
+        "DUPLICATE_SUBMISSION": "Mükerrer Yükleme",
+        "TAMPERED_SIGNATURE": "Bozulmuş İmza",
+        "MISSING_MANIFEST": "Eksik Manifest",
+        "INVALID_GEOLOCATION": "Geçersiz Konum",
+        "ANTIVIRUS_ALERT": "Antivirüs Uyarısı",
+        "UNKNOWN_ORIGIN": "Bilinmeyen Kaynak",
+        "FAILED_INTEGRITY_CHECK": "Bütünlük Kontrolü Başarısız"
+      },
+      "en": {
+        "MALWARE": "Malware",
+        "HASH_MISMATCH": "Hash Mismatch",
+        "POLICY_VIOLATION": "Policy Violation",
+        "FILE_CORRUPTION": "File Corruption",
+        "SUSPICIOUS_METADATA": "Suspicious Metadata",
+        "UNAUTHORIZED_FILE_TYPE": "Unauthorized File Type",
+        "SIZE_ANOMALY": "Size Anomaly",
+        "TIMESTAMP_ANOMALY": "Timestamp Anomaly",
+        "DUPLICATE_SUBMISSION": "Duplicate Submission",
+        "TAMPERED_SIGNATURE": "Tampered Signature",
+        "MISSING_MANIFEST": "Missing Manifest",
+        "INVALID_GEOLOCATION": "Invalid Geolocation",
+        "ANTIVIRUS_ALERT": "Antivirus Alert",
+        "UNKNOWN_ORIGIN": "Unknown Origin",
+        "FAILED_INTEGRITY_CHECK": "Failed Integrity Check"
+      }
+    },
+    "responseActions": {
+      "QUARANTINE": {
+        "description": "Isolate file, prevent processing",
+        "notification": ["IL_OPERATOR", "SECURITY_TEAM"]
+      },
+      "FLAG_FOR_REVIEW": {
+        "description": "Mark for manual review but allow processing",
+        "notification": ["IL_OPERATOR"]
+      },
+      "LOG_WARNING": {
+        "description": "Log issue, proceed with caution",
+        "notification": []
+      },
+      "REJECT_UPLOAD": {
+        "description": "Reject upload immediately",
+        "notification": ["PILOT", "IL_OPERATOR"]
+      }
+    }
+  },
+  "notes": {
+    "breaking_change_policy": "Adding new threat types is non-breaking (MINOR). Removing or renaming types is breaking (MAJOR).",
+    "sop_reference": "Threat detection and response procedures defined in SAHA_OPERASYON_SOP_v2_4_.docx Section 3 (Quarantine).",
+    "chain_of_custody": "All threat detections must be logged with full chain-of-custody information for audit trail.",
+    "false_positives": "System should track false positive rates per threat type for continuous improvement."
+  }
+}

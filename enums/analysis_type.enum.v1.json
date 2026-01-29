@@ -1,0 +1,164 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://api.tarlaanaliz.com/enums/analysis_type.enum.v1.json",
+  "title": "AnalysisType",
+  "description": "Types of agricultural analysis performed on field imagery",
+  "type": "string",
+  "enum": [
+    "HEALTH",
+    "DISEASE",
+    "PEST",
+    "FUNGUS",
+    "WEED",
+    "WATER_STRESS",
+    "NITROGEN_STRESS"
+  ],
+  "metadata": {
+    "version": "1.0.0",
+    "lastUpdated": "2026-01-26",
+    "kr002_reference": "Analysis types defined in KR-002 (Harita katmanı anlamları). These are map layers with specific colors and patterns.",
+    "layerMapping": {
+      "HEALTH": {
+        "description": "Sağlık katmanı - Bitki sağlık durumu",
+        "color": "Yeşil (Green)",
+        "pattern": "Düz",
+        "kr002": "Sağlık (Health): Yeşil"
+      },
+      "DISEASE": {
+        "description": "Hastalık katmanı - Hastalık tespiti",
+        "color": "Turuncu (Orange)",
+        "pattern": "Düz",
+        "kr002": "Hastalık (Disease): Turuncu"
+      },
+      "PEST": {
+        "description": "Zararlı böcek katmanı",
+        "color": "Kırmızı (Red)",
+        "pattern": "Düz",
+        "kr002": "Zararlı Böcek (Pest): Kırmızı"
+      },
+      "FUNGUS": {
+        "description": "Mantar hastalığı katmanı",
+        "color": "Mor (Purple)",
+        "pattern": "Düz",
+        "kr002": "Mantar (Fungus): Mor"
+      },
+      "WEED": {
+        "description": "Yabancı ot katmanı",
+        "color": "Sarı/Hardal (Yellow/Mustard)",
+        "pattern": "Noktalı desen (Dotted pattern)",
+        "kr002": "Yabancı Ot (Weed): Sarı/Hardal + noktalı desen"
+      },
+      "WATER_STRESS": {
+        "description": "Su stresi katmanı",
+        "color": "Mavi (Blue)",
+        "pattern": "Damla noktalı desen (Water drop pattern)",
+        "kr002": "Su Stresi: Mavi + damla noktalı desen"
+      },
+      "NITROGEN_STRESS": {
+        "description": "Azot stresi katmanı",
+        "color": "Soluk gri (Light gray)",
+        "pattern": "Çapraz çizgili desen (Cross-hatched pattern)",
+        "kr002": "Azot Stresi: Soluk gri + çapraz çizgili desen"
+      }
+    },
+    "analysisCategories": {
+      "MAP_LAYERS": {
+        "description": "All analysis types are map layers (harita katmanı) per KR-002",
+        "types": [
+          "HEALTH",
+          "DISEASE",
+          "PEST",
+          "FUNGUS",
+          "WEED",
+          "WATER_STRESS",
+          "NITROGEN_STRESS"
+        ],
+        "krReference": "KR-002"
+      }
+    },
+    "analysisDescriptions": {
+      "HEALTH": {
+        "fullName": "Sağlık Katmanı (Health Layer)",
+        "description": "Overall plant health status map layer",
+        "color": "Green",
+        "pattern": "Solid",
+        "outputType": "map_layer",
+        "krReference": "KR-002"
+      },
+      "DISEASE": {
+        "fullName": "Hastalık Katmanı (Disease Layer)",
+        "description": "Disease detection and mapping",
+        "color": "Orange",
+        "pattern": "Solid",
+        "outputType": "map_layer",
+        "krReference": "KR-002"
+      },
+      "PEST": {
+        "fullName": "Zararlı Böcek Katmanı (Pest Layer)",
+        "description": "Pest infestation detection and mapping",
+        "color": "Red",
+        "pattern": "Solid",
+        "outputType": "map_layer",
+        "krReference": "KR-002"
+      },
+      "FUNGUS": {
+        "fullName": "Mantar Katmanı (Fungus Layer)",
+        "description": "Fungal disease detection and mapping",
+        "color": "Purple",
+        "pattern": "Solid",
+        "outputType": "map_layer",
+        "krReference": "KR-002"
+      },
+      "WEED": {
+        "fullName": "Yabancı Ot Katmanı (Weed Layer)",
+        "description": "Weed detection and mapping",
+        "color": "Yellow/Mustard",
+        "pattern": "Dotted",
+        "outputType": "map_layer",
+        "krReference": "KR-002"
+      },
+      "WATER_STRESS": {
+        "fullName": "Su Stresi Katmanı (Water Stress Layer)",
+        "description": "Water stress detection and mapping",
+        "color": "Blue",
+        "pattern": "Water drop dots",
+        "outputType": "map_layer",
+        "krReference": "KR-002"
+      },
+      "NITROGEN_STRESS": {
+        "fullName": "Azot Stresi Katmanı (Nitrogen Stress Layer)",
+        "description": "Nitrogen deficiency detection and mapping",
+        "color": "Light gray",
+        "pattern": "Cross-hatched",
+        "outputType": "map_layer",
+        "krReference": "KR-002"
+      }
+    },
+    "displayNames": {
+      "tr": {
+        "HEALTH": "Sağlık",
+        "DISEASE": "Hastalık",
+        "PEST": "Zararlı Böcek",
+        "FUNGUS": "Mantar",
+        "WEED": "Yabancı Ot",
+        "WATER_STRESS": "Su Stresi",
+        "NITROGEN_STRESS": "Azot Stresi"
+      },
+      "en": {
+        "HEALTH": "Health",
+        "DISEASE": "Disease",
+        "PEST": "Pest",
+        "FUNGUS": "Fungus",
+        "WEED": "Weed",
+        "WATER_STRESS": "Water Stress",
+        "NITROGEN_STRESS": "Nitrogen Stress"
+      }
+    }
+  },
+  "notes": {
+    "breaking_change_policy": "Adding new analysis types is non-breaking (MINOR). Removing or renaming types is breaking (MAJOR).",
+    "kr_reference": "Analysis types defined in KR-002 (Harita katmanı anlamları). These are the ONLY supported analysis types.",
+    "map_layers": "All analysis types are map layers (harita katmanı) with specific colors and patterns as defined in KR-002.",
+    "one_way_flow": "AI analysis produces ONLY map layers. No prescription/recommendation generation. Per KR-071 (one-way data flow)."
+  }
+}

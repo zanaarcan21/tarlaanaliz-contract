@@ -1,0 +1,236 @@
+[tool.poetry]
+name = "tarlaanaliz-contracts"
+version = "1.0.0"
+description = "Contract-first JSON Schema, OpenAPI, and enum definitions for TarlaAnaliz platform"
+authors = ["TarlaAnaliz Team <dev@tarlaanaliz.com>"]
+license = "UNLICENSED"
+readme = "README.md"
+repository = "https://github.com/tarlaanaliz/tarlaanaliz-contracts"
+keywords = ["json-schema", "draft-2020-12", "openapi", "contracts"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+]
+
+[tool.poetry.dependencies]
+python = "^3.10"
+jsonschema = {extras = ["format"], version = "^4.20.0"}
+pyyaml = "^6.0.1"
+pydantic = "^2.5.3"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^7.4.3"
+pytest-cov = "^4.1.0"
+pytest-xdist = "^3.5.0"
+black = "^23.12.1"
+ruff = "^0.1.9"
+mypy = "^1.8.0"
+pre-commit = "^3.6.0"
+datamodel-code-generator = "^0.25.2"
+
+[tool.poetry.scripts]
+validate = "tools.validate:main"
+generate-types = "tools.generate_types:main"
+pin-version = "tools.pin_version:main"
+breaking-change = "tools.breaking_change_detector:main"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+# ============================================================================
+# Black (Code Formatter)
+# ============================================================================
+[tool.black]
+line-length = 100
+target-version = ["py310", "py311", "py312"]
+include = '\.pyi?$'
+extend-exclude = '''
+/(
+    \.git
+  | \.mypy_cache
+  | \.pytest_cache
+  | \.venv
+  | _build
+  | build
+  | dist
+  | generated
+)/
+'''
+
+# ============================================================================
+# Ruff (Linter)
+# ============================================================================
+[tool.ruff]
+line-length = 100
+target-version = "py310"
+select = [
+    "E",    # pycodestyle errors
+    "W",    # pycodestyle warnings
+    "F",    # pyflakes
+    "I",    # isort
+    "N",    # pep8-naming
+    "UP",   # pyupgrade
+    "B",    # flake8-bugbear
+    "C4",   # flake8-comprehensions
+    "SIM",  # flake8-simplify
+    "TCH",  # flake8-type-checking
+    "TID",  # flake8-tidy-imports
+    "RUF",  # Ruff-specific rules
+]
+ignore = [
+    "E501",  # line too long (handled by black)
+    "B008",  # do not perform function calls in argument defaults
+    "B905",  # zip without strict parameter
+]
+exclude = [
+    ".git",
+    ".mypy_cache",
+    ".pytest_cache",
+    ".venv",
+    "build",
+    "dist",
+    "generated",
+]
+
+[tool.ruff.per-file-ignores]
+"__init__.py" = ["F401"]  # unused imports in __init__.py
+"tests/**/*.py" = ["S101"]  # assert allowed in tests
+
+[tool.ruff.isort]
+known-first-party = ["tools", "tests"]
+force-single-line = false
+lines-after-imports = 2
+
+# ============================================================================
+# MyPy (Type Checker)
+# ============================================================================
+[tool.mypy]
+python_version = "3.10"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+disallow_any_unimported = false
+no_implicit_optional = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_no_return = true
+check_untyped_defs = true
+strict_equality = true
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "tests.*"
+disallow_untyped_defs = false
+
+[[tool.mypy.overrides]]
+module = "generated.*"
+ignore_errors = true
+
+# ============================================================================
+# Pytest
+# ============================================================================
+[tool.pytest.ini_options]
+minversion = "7.0"
+testpaths = ["tests"]
+python_files = ["test_*.py", "*_test.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = [
+    "-ra",
+    "--strict-markers",
+    "--strict-config",
+    "--showlocals",
+    "--tb=short",
+    "--cov=tools",
+    "--cov-report=term-missing:skip-covered",
+    "--cov-report=html",
+    "--cov-report=xml",
+]
+markers = [
+    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+    "integration: marks tests as integration tests",
+    "unit: marks tests as unit tests",
+]
+filterwarnings = [
+    "error",
+    "ignore::DeprecationWarning",
+]
+
+[tool.coverage.run]
+source = ["tools"]
+omit = [
+    "*/tests/*",
+    "*/test_*.py",
+    "*/__init__.py",
+    "*/generated/*",
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if __name__ == .__main__.:",
+    "if TYPE_CHECKING:",
+    "@abstractmethod",
+]
+precision = 2
+show_missing = true
+skip_covered = false
+
+[tool.coverage.html]
+directory = "coverage_html"
+
+# ============================================================================
+# JSON Schema Validation Policy
+# ============================================================================
+[tool.tarlaanaliz.schema]
+# Enforce JSON Schema Draft 2020-12
+schema_standard = "https://json-schema.org/draft/2020-12/schema"
+
+# Forbidden field names (PII minimization)
+forbidden_fields = [
+    "email",
+    "tckn",
+    "otp",
+]
+
+# Required schema properties
+required_properties = [
+    "$schema",
+    "$id",
+    "title",
+    "type",
+]
+
+# Policy: unevaluatedProperties must be false
+enforce_unevaluated_properties = true
+
+# Draft 2020-12 required features
+required_features = [
+    "$defs",  # For reusable type definitions
+    "unevaluatedProperties",  # Must be set to false
+]
+
+# Warning features (allowed but generate warnings)
+warning_features = [
+    "additionalProperties",  # Prefer unevaluatedProperties
+]
+
+# Validation strictness
+strict_mode = true
+fail_on_warning = false
+
+# ============================================================================
+# Pre-commit Hooks Configuration
+# ============================================================================
+# .pre-commit-config.yaml should reference these tools
+# Run: pre-commit install
+# Run: pre-commit run --all-files

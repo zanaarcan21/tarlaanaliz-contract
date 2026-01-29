@@ -1,0 +1,433 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://api.tarlaanaliz.com/schemas/edge/intake_manifest.v1.schema.json",
+  "title": "IntakeManifest",
+  "description": "Station intake batch manifest with integrity verification, chain-of-custody, and antivirus scan results. Critical for quarantine process.",
+  "type": "object",
+  "properties": {
+    "id": {
+      "$ref": "#/$defs/ManifestId",
+      "description": "Unique manifest identifier"
+    },
+    "batch_id": {
+      "type": "string",
+      "pattern": "^batch_[a-z0-9]{24}$",
+      "description": "Batch identifier for grouping related uploads"
+    },
+    "mission_id": {
+      "type": "string",
+      "pattern": "^mission_[a-z0-9]{24}$",
+      "description": "Associated mission identifier"
+    },
+    "field_id": {
+      "type": "string",
+      "pattern": "^field_[a-z0-9]{24}$",
+      "description": "Associated field identifier"
+    },
+    "kiosk_id": {
+      "type": "string",
+      "pattern": "^kiosk_[a-z0-9]{24}$",
+      "description": "Station/kiosk identifier"
+    },
+    "operator_id": {
+      "type": "string",
+      "pattern": "^user_[a-z0-9]{24}$",
+      "description": "Operator who processed the intake (pilot or station operator)"
+    },
+    "card_id": {
+      "type": "string",
+      "maxLength": 100,
+      "description": "SD card or storage device identifier"
+    },
+    "files": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/FileEntry"
+      },
+      "minItems": 1,
+      "description": "List of files in this batch"
+    },
+    "total_size_bytes": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Total size of all files in bytes"
+    },
+    "total_files": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Total number of files"
+    },
+    "av_scan_result": {
+      "$ref": "#/$defs/AvScanResult",
+      "description": "Antivirus scan result (REQUIRED before release)"
+    },
+    "signature": {
+      "$ref": "#/$defs/Signature",
+      "description": "Digital signature for integrity verification"
+    },
+    "chain_of_custody": {
+      "$ref": "#/$defs/ChainOfCustody",
+      "description": "Chain-of-custody tracking"
+    },
+    "metadata": {
+      "$ref": "#/$defs/IntakeMetadata",
+      "description": "Additional intake metadata"
+    },
+    "created_at": {
+      "$ref": "#/$defs/Timestamp",
+      "description": "Manifest creation timestamp"
+    },
+    "expires_at": {
+      "$ref": "#/$defs/Timestamp",
+      "description": "Manifest expiration (for temporary storage)"
+    }
+  },
+  "required": [
+    "id",
+    "batch_id",
+    "mission_id",
+    "field_id",
+    "kiosk_id",
+    "operator_id",
+    "files",
+    "total_size_bytes",
+    "total_files",
+    "av_scan_result",
+    "signature",
+    "chain_of_custody",
+    "created_at"
+  ],
+  "unevaluatedProperties": false,
+  "$defs": {
+    "ManifestId": {
+      "type": "string",
+      "pattern": "^manifest_[a-z0-9]{24}$",
+      "description": "Manifest identifier format: manifest_{24-char-hex}"
+    },
+    "FileEntry": {
+      "type": "object",
+      "title": "File Entry",
+      "description": "Individual file in the batch",
+      "properties": {
+        "path": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 500,
+          "description": "Relative file path within batch"
+        },
+        "name": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 255,
+          "description": "File name"
+        },
+        "size_bytes": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "File size in bytes"
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$",
+          "description": "SHA-256 hash (REQUIRED for integrity check)"
+        },
+        "mime_type": {
+          "type": "string",
+          "description": "MIME type"
+        },
+        "extension": {
+          "type": "string",
+          "pattern": "^\\.[a-zA-Z0-9]+$",
+          "description": "File extension (e.g., .jpg, .tif)"
+        },
+        "created_at": {
+          "$ref": "#/$defs/Timestamp",
+          "description": "File creation timestamp (from EXIF or filesystem)"
+        },
+        "exif_data": {
+          "type": "object",
+          "additionalProperties": true,
+          "description": "Selected EXIF metadata (GPS, camera settings, etc.)"
+        }
+      },
+      "required": ["path", "name", "size_bytes", "sha256", "mime_type"],
+      "unevaluatedProperties": false
+    },
+    "AvScanResult": {
+      "type": "object",
+      "title": "Antivirus Scan Result",
+      "description": "Results from antivirus scanning",
+      "properties": {
+        "scanned": {
+          "type": "boolean",
+          "description": "Whether scan was performed"
+        },
+        "clean": {
+          "type": "boolean",
+          "description": "Whether batch is clean (no threats detected)"
+        },
+        "threats_detected": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Number of threats detected"
+        },
+        "threat_details": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/ThreatDetail"
+          },
+          "description": "Details of detected threats"
+        },
+        "scanner_name": {
+          "type": "string",
+          "description": "Antivirus scanner name (e.g., ClamAV)"
+        },
+        "scanner_version": {
+          "type": "string",
+          "description": "Scanner version"
+        },
+        "signature_version": {
+          "type": "string",
+          "description": "Virus signature database version"
+        },
+        "scan_started_at": {
+          "$ref": "#/$defs/Timestamp",
+          "description": "Scan start timestamp"
+        },
+        "scan_completed_at": {
+          "$ref": "#/$defs/Timestamp",
+          "description": "Scan completion timestamp"
+        }
+      },
+      "required": ["scanned", "clean", "threats_detected", "scanner_name", "signature_version", "scan_started_at", "scan_completed_at"],
+      "unevaluatedProperties": false
+    },
+    "ThreatDetail": {
+      "type": "object",
+      "title": "Threat Detail",
+      "properties": {
+        "file_path": {
+          "type": "string",
+          "description": "Path of infected file"
+        },
+        "threat_name": {
+          "type": "string",
+          "description": "Threat/malware name"
+        },
+        "threat_type": {
+          "type": "string",
+          "description": "Threat type (reference: enums/threat_type.enum.v1.json)"
+        },
+        "severity": {
+          "type": "string",
+          "enum": ["LOW", "MEDIUM", "HIGH", "CRITICAL"],
+          "description": "Threat severity"
+        }
+      },
+      "required": ["file_path", "threat_name", "threat_type", "severity"],
+      "unevaluatedProperties": false
+    },
+    "Signature": {
+      "type": "object",
+      "title": "Digital Signature",
+      "description": "Digital signature for manifest integrity",
+      "properties": {
+        "algorithm": {
+          "type": "string",
+          "enum": ["SHA256-RSA", "SHA256-ECDSA"],
+          "description": "Signature algorithm"
+        },
+        "value": {
+          "type": "string",
+          "description": "Base64-encoded signature value"
+        },
+        "certificate_thumbprint": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$",
+          "description": "Certificate thumbprint (SHA-256)"
+        },
+        "signed_at": {
+          "$ref": "#/$defs/Timestamp",
+          "description": "Signature timestamp"
+        }
+      },
+      "required": ["algorithm", "value", "certificate_thumbprint", "signed_at"],
+      "unevaluatedProperties": false
+    },
+    "ChainOfCustody": {
+      "type": "object",
+      "title": "Chain of Custody",
+      "description": "Chain-of-custody tracking for audit trail",
+      "properties": {
+        "origin": {
+          "type": "string",
+          "description": "Origin of data (e.g., 'DJI Mavic 3M', 'SD Card XYZ')"
+        },
+        "captured_by": {
+          "type": "string",
+          "pattern": "^user_[a-z0-9]{24}$",
+          "description": "Pilot who captured the data"
+        },
+        "captured_at": {
+          "$ref": "#/$defs/Timestamp",
+          "description": "Data capture timestamp"
+        },
+        "transferred_to_station_at": {
+          "$ref": "#/$defs/Timestamp",
+          "description": "Transfer to station timestamp"
+        },
+        "verified_by": {
+          "type": "string",
+          "pattern": "^user_[a-z0-9]{24}$",
+          "description": "Operator who verified the transfer"
+        },
+        "verified_at": {
+          "$ref": "#/$defs/Timestamp",
+          "description": "Verification timestamp"
+        },
+        "custody_events": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/CustodyEvent"
+          },
+          "description": "Chain-of-custody events"
+        }
+      },
+      "required": ["origin", "captured_by", "captured_at", "transferred_to_station_at"],
+      "unevaluatedProperties": false
+    },
+    "CustodyEvent": {
+      "type": "object",
+      "title": "Custody Event",
+      "properties": {
+        "event_type": {
+          "type": "string",
+          "enum": ["CAPTURED", "TRANSFERRED", "RECEIVED", "VERIFIED", "QUARANTINED", "RELEASED"],
+          "description": "Custody event type"
+        },
+        "actor": {
+          "type": "string",
+          "description": "User or system that performed the action"
+        },
+        "location": {
+          "type": "string",
+          "description": "Location identifier (kiosk_id, warehouse_id, etc.)"
+        },
+        "timestamp": {
+          "$ref": "#/$defs/Timestamp"
+        },
+        "notes": {
+          "type": "string",
+          "maxLength": 500,
+          "description": "Optional notes"
+        }
+      },
+      "required": ["event_type", "actor", "timestamp"],
+      "unevaluatedProperties": false
+    },
+    "IntakeMetadata": {
+      "type": "object",
+      "title": "Intake Metadata",
+      "properties": {
+        "drone_model": {
+          "type": "string",
+          "description": "Drone model (e.g., 'DJI Mavic 3M')"
+        },
+        "firmware_version": {
+          "type": "string",
+          "description": "Drone firmware version"
+        },
+        "flight_log_present": {
+          "type": "boolean",
+          "description": "Whether flight log is included"
+        },
+        "image_count": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Number of image files"
+        },
+        "video_count": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Number of video files"
+        },
+        "other_count": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Number of other files"
+        }
+      },
+      "unevaluatedProperties": false
+    },
+    "Timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 timestamp (UTC)"
+    }
+  },
+  "examples": [
+    {
+      "id": "manifest_60a7f1b8c9d4e5f6a7b8c9d1",
+      "batch_id": "batch_60a7f1b8c9d4e5f6a7b8c9d0",
+      "mission_id": "mission_60a7f1b8c9d4e5f6a7b8c9d0",
+      "field_id": "field_507f1f77bcf86cd799439011",
+      "kiosk_id": "kiosk_60a7f1b8c9d4e5f6a7b8c9d2",
+      "operator_id": "user_60a7f1b8c9d4e5f6a7b8c9d3",
+      "card_id": "SD_32GB_SN123456",
+      "files": [
+        {
+          "path": "DCIM/100MEDIA/IMG_0001.JPG",
+          "name": "IMG_0001.JPG",
+          "size_bytes": 5242880,
+          "sha256": "a3f2b8c9d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1",
+          "mime_type": "image/jpeg",
+          "extension": ".jpg",
+          "created_at": "2026-06-15T07:15:23Z"
+        }
+      ],
+      "total_size_bytes": 2515845120,
+      "total_files": 487,
+      "av_scan_result": {
+        "scanned": true,
+        "clean": true,
+        "threats_detected": 0,
+        "threat_details": [],
+        "scanner_name": "ClamAV",
+        "scanner_version": "1.0.4",
+        "signature_version": "27304",
+        "scan_started_at": "2026-06-15T08:00:00Z",
+        "scan_completed_at": "2026-06-15T08:02:15Z"
+      },
+      "signature": {
+        "algorithm": "SHA256-RSA",
+        "value": "base64_encoded_signature_here",
+        "certificate_thumbprint": "b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1a2b3c4d5e6f7a8b9c0d1e2f3a4b5",
+        "signed_at": "2026-06-15T08:02:30Z"
+      },
+      "chain_of_custody": {
+        "origin": "DJI Mavic 3M SN:ABC123",
+        "captured_by": "user_60a7f1b8c9d4e5f6a7b8c9d0",
+        "captured_at": "2026-06-15T07:15:00Z",
+        "transferred_to_station_at": "2026-06-15T07:55:00Z",
+        "verified_by": "user_60a7f1b8c9d4e5f6a7b8c9d3",
+        "verified_at": "2026-06-15T08:00:00Z"
+      },
+      "metadata": {
+        "drone_model": "DJI Mavic 3M",
+        "firmware_version": "02.01.05.03",
+        "flight_log_present": true,
+        "image_count": 487,
+        "video_count": 0,
+        "other_count": 1
+      },
+      "created_at": "2026-06-15T08:02:30Z"
+    }
+  ],
+  "notes": {
+    "critical_rules": "1) All files MUST have sha256 hash, 2) av_scan_result REQUIRED before release, 3) Files without hashes are REJECTED",
+    "quarantine_gate": "Manifest cannot be released from quarantine without: (a) av_scan_result.clean = true, (b) signature verification passed, (c) all hash checks passed",
+    "chain_of_custody": "Full audit trail from capture to delivery. Every custody transfer must be logged.",
+    "sop_reference": "Intake procedures defined in SAHA_OPERASYON_SOP_v2_4_.docx Section 2-3 (Intake + Quarantine).",
+    "kr_reference": "Chain-of-custody in KR-040 (Security). Quarantine flow in SOP."
+  }
+}

@@ -1,0 +1,77 @@
+# Security Schemes for TarlaAnaliz API
+# Per KR-050: phone + PIN authentication (NO email, NO TCKN, NO OTP)
+# Session token (JWT or opaque) with RBAC claims
+
+components:
+  securitySchemes:
+    # Primary authentication: Session token (after phone + PIN login)
+    SessionToken:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: |
+        Session token issued after successful phone + PIN authentication.
+        Token contains RBAC claims (user_id, role, permissions).
+        Per KR-050: Identity = phone (E.164: +90 + 10 digits) + 6-digit PIN.
+        NO email, NO TCKN, NO OTP.
+        
+        Token payload example:
+        ```json
+        {
+          "sub": "user_60a7f1b8c9d4e5f6a7b8c9d0",
+          "role": "FARMER",
+          "permissions": ["field:read", "field:write", "mission:read"],
+          "province": "21",
+          "iat": 1640000000,
+          "exp": 1640086400
+        }
+        ```
+        
+        Header: `Authorization: Bearer <token>`
+
+    # API Key for service-to-service communication
+    ApiKey:
+      type: apiKey
+      in: header
+      name: X-API-Key
+      description: |
+        API key for internal service-to-service authentication.
+        Used by platform services, edge stations, and workers.
+        Format: `apikey_{service_name}_{24-char-hex}`
+        
+        Header: `X-API-Key: apikey_edge_station_abc123...`
+
+    # Service token for internal services (e.g., worker to platform)
+    ServiceToken:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+      description: |
+        JWT token for internal service authentication.
+        Issued by platform to trusted services (edge, worker).
+        Contains service identity and permissions.
+        
+        Token payload example:
+        ```json
+        {
+          "sub": "service:analysis-worker",
+          "service_id": "worker_gpu_03_us_east_1",
+          "permissions": ["job:read", "result:write"],
+          "iat": 1640000000,
+          "exp": 1640086400
+        }
+        ```
+
+# Security requirements
+# Default: All endpoints require SessionToken unless specified otherwise
+security:
+  - SessionToken: []
+
+# Notes:
+# - Phone + PIN authentication: POST /auth/login with phone + PIN
+# - PIN is ALWAYS hashed (SHA-256 + salt + PBKDF2) - never transmitted or stored in plain text
+# - Session token expires after 24 hours (configurable)
+# - Refresh token mechanism: POST /auth/refresh
+# - NO email, NO TCKN, NO OTP (per KR-050)
+# - RBAC enforcement at API gateway (role + permissions check)
+# - Service-to-service: ApiKey or ServiceToken

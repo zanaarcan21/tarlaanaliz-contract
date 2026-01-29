@@ -1,0 +1,97 @@
+openapi: 3.1.0
+info:
+  title: TarlaAnaliz Platform Internal API
+  version: 1.0.0
+  description: |
+    Internal API for service-to-service communication.
+    Used by: Platform ↔ Edge ↔ Worker services
+    
+    **Authentication**: Service token (ServiceToken or ApiKey)
+    **Endpoints**: Intake notifications, job submissions, event posts
+    
+servers:
+  - url: https://internal-api.tarlaanaliz.com/v1
+    description: Production (internal network)
+
+security:
+  - ServiceToken: []
+  - ApiKey: []
+
+tags:
+  - name: Intake
+    description: Edge intake notifications
+  - name: Jobs
+    description: Analysis job management
+  - name: Events
+    description: Domain event publishing
+
+paths:
+  /intake/manifests:
+    post:
+      tags: [Intake]
+      summary: Submit intake manifest
+      description: Edge station submits batch manifest after quarantine
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: './components/schemas.yaml#/components/schemas/IntakeManifest'
+      responses:
+        '201':
+          description: Manifest accepted
+  
+  /jobs:
+    post:
+      tags: [Jobs]
+      summary: Create analysis job
+      description: Platform submits job to worker queue
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: './components/schemas.yaml#/components/schemas/AnalysisJob'
+      responses:
+        '201':
+          description: Job created
+  
+  /results:
+    post:
+      tags: [Jobs]
+      summary: Submit analysis result
+      description: Worker posts result (one-way flow per KR-071)
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: './components/schemas.yaml#/components/schemas/AnalysisResult'
+      responses:
+        '201':
+          description: Result accepted
+  
+  /events:
+    post:
+      tags: [Events]
+      summary: Publish domain event
+      description: Services publish events to event bus
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              oneOf:
+                - $ref: './components/schemas.yaml#/components/schemas/FieldCreatedEvent'
+                - $ref: './components/schemas.yaml#/components/schemas/MissionAssignedEvent'
+                - $ref: './components/schemas.yaml#/components/schemas/AnalysisCompletedEvent'
+      responses:
+        '202':
+          description: Event accepted
+
+components:
+  securitySchemes:
+    ServiceToken:
+      $ref: './components/security_schemes.yaml#/components/securitySchemes/ServiceToken'
+    ApiKey:
+      $ref: './components/security_schemes.yaml#/components/securitySchemes/ApiKey'

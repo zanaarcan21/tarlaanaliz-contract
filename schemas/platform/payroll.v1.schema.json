@@ -1,0 +1,418 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://api.tarlaanaliz.com/schemas/platform/payroll.v1.schema.json",
+  "title": "PayrollRecord",
+  "description": "Pilot and IL operator payroll record. Tracks earnings from approved missions (per KR-031).",
+  "type": "object",
+  "properties": {
+    "id": {
+      "$ref": "#/$defs/PayrollId",
+      "description": "Unique payroll record identifier"
+    },
+    "payee": {
+      "$ref": "#/$defs/Payee",
+      "description": "Who is being paid (pilot or IL operator)"
+    },
+    "period": {
+      "$ref": "#/$defs/PayrollPeriod",
+      "description": "Payroll period (monthly)"
+    },
+    "lines": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/PayoutLine"
+      },
+      "minItems": 1,
+      "description": "Individual payout line items (per mission)"
+    },
+    "totals": {
+      "$ref": "#/$defs/PayrollTotals",
+      "description": "Aggregate totals"
+    },
+    "status": {
+      "type": "string",
+      "enum": ["DRAFT", "PENDING_APPROVAL", "APPROVED", "PAID", "DISPUTED"],
+      "description": "Payroll status"
+    },
+    "approved_by": {
+      "type": "string",
+      "pattern": "^user_[a-z0-9]{24}$",
+      "description": "Admin who approved payroll"
+    },
+    "approved_at": {
+      "$ref": "#/$defs/Timestamp",
+      "description": "Approval timestamp"
+    },
+    "paid_at": {
+      "$ref": "#/$defs/Timestamp",
+      "description": "Payment timestamp"
+    },
+    "payment_reference": {
+      "type": "string",
+      "description": "External payment system reference"
+    },
+    "dispute": {
+      "$ref": "#/$defs/Dispute",
+      "description": "Dispute information (if status = DISPUTED)"
+    },
+    "created_at": {
+      "$ref": "#/$defs/Timestamp",
+      "description": "Record creation timestamp"
+    },
+    "metadata": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "Additional metadata"
+    }
+  },
+  "required": [
+    "id",
+    "payee",
+    "period",
+    "lines",
+    "totals",
+    "status",
+    "created_at"
+  ],
+  "unevaluatedProperties": false,
+  "$defs": {
+    "PayrollId": {
+      "type": "string",
+      "pattern": "^payroll_[a-z0-9]{24}$",
+      "description": "Payroll identifier format: payroll_{24-char-hex}"
+    },
+    "Payee": {
+      "type": "object",
+      "title": "Payee",
+      "description": "Who is being paid (PII-free)",
+      "properties": {
+        "user_id": {
+          "type": "string",
+          "pattern": "^user_[a-z0-9]{24}$",
+          "description": "Payee user ID (NOT PII)"
+        },
+        "role": {
+          "type": "string",
+          "enum": ["PILOT", "IL_OPERATOR"],
+          "description": "Payee role (reference: enums/role.enum.v1.json)"
+        },
+        "province_code": {
+          "type": "string",
+          "pattern": "^[0-9]{2}$",
+          "description": "Province code (01-81) for IL_OPERATOR"
+        }
+      },
+      "required": ["user_id", "role"],
+      "unevaluatedProperties": false
+    },
+    "PayrollPeriod": {
+      "type": "object",
+      "title": "Payroll Period",
+      "description": "Monthly payroll period (per KR-031: monthly cutoff)",
+      "properties": {
+        "year": {
+          "type": "integer",
+          "minimum": 2020,
+          "maximum": 2100,
+          "description": "Year"
+        },
+        "month": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 12,
+          "description": "Month (1-12)"
+        },
+        "cutoff_at": {
+          "$ref": "#/$defs/Timestamp",
+          "description": "Period cutoff timestamp (per KR-031: ay sonu 23:59)"
+        },
+        "dispute_deadline": {
+          "$ref": "#/$defs/Timestamp",
+          "description": "Dispute deadline (per KR-031: 3 iş günü itiraz penceresi)"
+        },
+        "payment_deadline": {
+          "$ref": "#/$defs/Timestamp",
+          "description": "Payment deadline (per KR-031: ilk 7 gün içinde ödeme)"
+        }
+      },
+      "required": ["year", "month", "cutoff_at", "dispute_deadline", "payment_deadline"],
+      "unevaluatedProperties": false
+    },
+    "PayoutLine": {
+      "type": "object",
+      "title": "Payout Line",
+      "description": "Individual payout line item for one mission",
+      "properties": {
+        "line_id": {
+          "type": "string",
+          "description": "Unique line identifier"
+        },
+        "mission_id": {
+          "type": "string",
+          "pattern": "^mission_[a-z0-9]{24}$",
+          "description": "Mission identifier (per KR-031: MissionID eslesmeden odeme yok)"
+        },
+        "field_id": {
+          "type": "string",
+          "pattern": "^field_[a-z0-9]{24}$",
+          "description": "Field identifier"
+        },
+        "completed_at": {
+          "$ref": "#/$defs/Timestamp",
+          "description": "Mission completion timestamp"
+        },
+        "area_scanned": {
+          "$ref": "#/$defs/AreaScanned",
+          "description": "Area scanned (per KR-031: kapsama-izi olmadan odeme yok)"
+        },
+        "rate_per_donum": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Rate per donum (per KR-031: varsayilan 3 TL/donum)"
+        },
+        "gross_amount": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Gross amount (area_donum * rate_per_donum)"
+        },
+        "currency": {
+          "type": "string",
+          "enum": ["TRY"],
+          "description": "Currency"
+        },
+        "deductions": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/Deduction"
+          },
+          "description": "Deductions (tax, fees, etc.)"
+        },
+        "net_amount": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Net amount after deductions"
+        },
+        "status": {
+          "type": "string",
+          "enum": ["PENDING", "APPROVED", "DISPUTED", "PAID"],
+          "description": "Line status"
+        }
+      },
+      "required": [
+        "line_id",
+        "mission_id",
+        "field_id",
+        "completed_at",
+        "area_scanned",
+        "rate_per_donum",
+        "gross_amount",
+        "currency",
+        "net_amount",
+        "status"
+      ],
+      "unevaluatedProperties": false
+    },
+    "AreaScanned": {
+      "type": "object",
+      "title": "Area Scanned",
+      "description": "Verified scanned area (coverage footprint)",
+      "properties": {
+        "donum": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Scanned area in donum (1 donum ≈ 0.1 hectare)"
+        },
+        "hectares": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Scanned area in hectares"
+        },
+        "coverage_percent": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100,
+          "description": "Coverage percentage of field"
+        },
+        "verified": {
+          "type": "boolean",
+          "description": "Whether coverage was verified (per KR-031: Observed kapsama-izi)"
+        },
+        "verification_method": {
+          "type": "string",
+          "enum": ["GPS_LOG", "IMAGE_FOOTPRINT", "MANUAL"],
+          "description": "How coverage was verified"
+        }
+      },
+      "required": ["donum", "hectares", "coverage_percent", "verified"],
+      "unevaluatedProperties": false
+    },
+    "Deduction": {
+      "type": "object",
+      "title": "Deduction",
+      "properties": {
+        "type": {
+          "type": "string",
+          "enum": ["TAX", "SOCIAL_SECURITY", "FEE", "PENALTY", "OTHER"],
+          "description": "Deduction type"
+        },
+        "description": {
+          "type": "string",
+          "maxLength": 200,
+          "description": "Deduction description"
+        },
+        "amount": {
+          "type": "number",
+          "description": "Deduction amount (negative)"
+        }
+      },
+      "required": ["type", "description", "amount"],
+      "unevaluatedProperties": false
+    },
+    "PayrollTotals": {
+      "type": "object",
+      "title": "Payroll Totals",
+      "properties": {
+        "total_missions": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Total number of missions"
+        },
+        "total_area_donum": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Total scanned area in donum"
+        },
+        "total_gross_amount": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Total gross amount"
+        },
+        "total_deductions": {
+          "type": "number",
+          "description": "Total deductions (negative)"
+        },
+        "total_net_amount": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Total net amount"
+        },
+        "currency": {
+          "type": "string",
+          "enum": ["TRY"],
+          "description": "Currency"
+        }
+      },
+      "required": [
+        "total_missions",
+        "total_area_donum",
+        "total_gross_amount",
+        "total_deductions",
+        "total_net_amount",
+        "currency"
+      ],
+      "unevaluatedProperties": false
+    },
+    "Dispute": {
+      "type": "object",
+      "title": "Dispute",
+      "properties": {
+        "disputed_at": {
+          "$ref": "#/$defs/Timestamp",
+          "description": "Dispute timestamp"
+        },
+        "reason": {
+          "type": "string",
+          "maxLength": 1000,
+          "description": "Dispute reason"
+        },
+        "disputed_lines": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Line IDs in dispute"
+        },
+        "resolved_at": {
+          "$ref": "#/$defs/Timestamp",
+          "description": "Resolution timestamp"
+        },
+        "resolution": {
+          "type": "string",
+          "maxLength": 1000,
+          "description": "Dispute resolution"
+        }
+      },
+      "required": ["disputed_at", "reason", "disputed_lines"],
+      "unevaluatedProperties": false
+    },
+    "Timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 timestamp (UTC)"
+    }
+  },
+  "examples": [
+    {
+      "id": "payroll_60a7f1b8c9d4e5f6a7b8c9d0",
+      "payee": {
+        "user_id": "user_60a7f1b8c9d4e5f6a7b8c9d0",
+        "role": "PILOT"
+      },
+      "period": {
+        "year": 2026,
+        "month": 6,
+        "cutoff_at": "2026-06-30T23:59:59Z",
+        "dispute_deadline": "2026-07-03T23:59:59Z",
+        "payment_deadline": "2026-07-07T23:59:59Z"
+      },
+      "lines": [
+        {
+          "line_id": "line_001",
+          "mission_id": "mission_60a7f1b8c9d4e5f6a7b8c9d0",
+          "field_id": "field_507f1f77bcf86cd799439011",
+          "completed_at": "2026-06-15T08:00:00Z",
+          "area_scanned": {
+            "donum": 102,
+            "hectares": 10.2,
+            "coverage_percent": 99.5,
+            "verified": true,
+            "verification_method": "GPS_LOG"
+          },
+          "rate_per_donum": 3.0,
+          "gross_amount": 306.0,
+          "currency": "TRY",
+          "deductions": [
+            {
+              "type": "TAX",
+              "description": "Stopaj vergisi (%15)",
+              "amount": -45.9
+            }
+          ],
+          "net_amount": 260.1,
+          "status": "APPROVED"
+        }
+      ],
+      "totals": {
+        "total_missions": 15,
+        "total_area_donum": 1530,
+        "total_gross_amount": 4590.0,
+        "total_deductions": -688.5,
+        "total_net_amount": 3901.5,
+        "currency": "TRY"
+      },
+      "status": "APPROVED",
+      "approved_by": "user_admin_001",
+      "approved_at": "2026-07-02T10:00:00Z",
+      "created_at": "2026-07-01T08:00:00Z"
+    }
+  ],
+  "notes": {
+    "monthly_cutoff": "Per KR-031: 'ay sonu 23:59 cut-off + 3 is gunu itiraz penceresi + ilk 7 gun icinde odeme'.",
+    "mission_linkage": "Per KR-031: 'MissionID eslesmeden odeme yok'. Every payout line MUST reference approved mission.",
+    "coverage_verification": "Per KR-031: 'Observed kapsama-izi olmadan odeme yok'. Area scanned must be verified via GPS log or image footprint.",
+    "default_rate": "Per KR-031: 'varsayilan 3 TL/donum; il bazinda CENTRAL_ADMIN tanimlayabilir (PilotRateByProvince)'.",
+    "pii_free": "user_id is NOT PII. Real identity is in PII vault (user_pii.v1.schema.json).",
+    "audit_log": "Per KR-020: 'hakediş adımlarında zorunlu log'. All payroll operations logged to audit trail.",
+    "kr_reference": "Payroll policy in KR-031 (Pilot Hakediş ve Ödeme Politikası). Audit in KR-020."
+  }
+}

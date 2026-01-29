@@ -1,0 +1,350 @@
+# Common API Parameters for TarlaAnaliz
+# Reusable path/query parameters across all API specs
+
+components:
+  parameters:
+    # ==================== Entity IDs (Path Parameters) ====================
+    
+    FieldId:
+      name: field_id
+      in: path
+      required: true
+      description: Field identifier
+      schema:
+        type: string
+        pattern: '^field_[a-z0-9]{24}$'
+        example: field_507f1f77bcf86cd799439011
+    
+    MissionId:
+      name: mission_id
+      in: path
+      required: true
+      description: Mission identifier
+      schema:
+        type: string
+        pattern: '^mission_[a-z0-9]{24}$'
+        example: mission_60a7f1b8c9d4e5f6a7b8c9d0
+    
+    UserId:
+      name: user_id
+      in: path
+      required: true
+      description: User identifier (NOT PII)
+      schema:
+        type: string
+        pattern: '^user_[a-z0-9]{24}$'
+        example: user_60a7f1b8c9d4e5f6a7b8c9d0
+    
+    JobId:
+      name: job_id
+      in: path
+      required: true
+      description: Analysis job identifier
+      schema:
+        type: string
+        pattern: '^job_[a-z0-9]{24}$'
+        example: job_60a7f1b8c9d4e5f6a7b8c9d2
+    
+    ResultId:
+      name: result_id
+      in: path
+      required: true
+      description: Analysis result identifier
+      schema:
+        type: string
+        pattern: '^result_[a-z0-9]{24}$'
+        example: result_60a7f1b8c9d4e5f6a7b8c9d3
+    
+    ManifestId:
+      name: manifest_id
+      in: path
+      required: true
+      description: Intake manifest identifier
+      schema:
+        type: string
+        pattern: '^manifest_[a-z0-9]{24}$'
+        example: manifest_60a7f1b8c9d4e5f6a7b8c9d4
+    
+    EventId:
+      name: event_id
+      in: path
+      required: true
+      description: Event identifier
+      schema:
+        type: string
+        pattern: '^event_[a-z0-9]{24}$'
+        example: event_60a7f1b8c9d4e5f6a7b8c9e0
+    
+    PriceBookId:
+      name: pricebook_id
+      in: path
+      required: true
+      description: Price book identifier
+      schema:
+        type: string
+        pattern: '^pricebook_[a-z0-9]{24}$'
+        example: pricebook_60a7f1b8c9d4e5f6a7b8c9d0
+    
+    PayrollId:
+      name: payroll_id
+      in: path
+      required: true
+      description: Payroll record identifier
+      schema:
+        type: string
+        pattern: '^payroll_[a-z0-9]{24}$'
+        example: payroll_60a7f1b8c9d4e5f6a7b8c9d0
+    
+    # ==================== Pagination (Query Parameters) ====================
+    
+    Page:
+      name: page
+      in: query
+      required: false
+      description: Page number (1-indexed)
+      schema:
+        type: integer
+        minimum: 1
+        default: 1
+        example: 1
+    
+    PageSize:
+      name: page_size
+      in: query
+      required: false
+      description: Number of items per page
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+        default: 20
+        example: 20
+    
+    Limit:
+      name: limit
+      in: query
+      required: false
+      description: Maximum number of items to return
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 1000
+        default: 100
+        example: 100
+    
+    Offset:
+      name: offset
+      in: query
+      required: false
+      description: Number of items to skip
+      schema:
+        type: integer
+        minimum: 0
+        default: 0
+        example: 0
+    
+    Cursor:
+      name: cursor
+      in: query
+      required: false
+      description: Cursor for pagination (opaque token)
+      schema:
+        type: string
+        example: cursor_abc123
+    
+    # ==================== Filtering (Query Parameters) ====================
+    
+    CropType:
+      name: crop_type
+      in: query
+      required: false
+      description: Filter by crop type (reference enums/crop_type.enum.v1.json)
+      schema:
+        type: string
+        enum:
+          - COTTON
+          - PISTACHIO
+          - MAIZE
+          - WHEAT
+          - SUNFLOWER
+          - GRAPE
+          - HAZELNUT
+          - OLIVE
+          - RED_LENTIL
+        example: COTTON
+    
+    AnalysisType:
+      name: analysis_type
+      in: query
+      required: false
+      description: Filter by analysis type (reference enums/analysis_type.enum.v1.json - KR-002)
+      schema:
+        type: string
+        enum:
+          - HEALTH
+          - DISEASE
+          - PEST
+          - FUNGUS
+          - WEED
+          - WATER_STRESS
+          - NITROGEN_STRESS
+        example: HEALTH
+    
+    MissionStatus:
+      name: status
+      in: query
+      required: false
+      description: Filter by mission status (reference enums/mission_status.enum.v1.json)
+      schema:
+        type: string
+        enum:
+          - DRAFT
+          - PENDING_ASSIGNMENT
+          - ASSIGNED
+          - ACCEPTED
+          - IN_PROGRESS
+          - COMPLETED
+          - FAILED
+          - CANCELLED
+        example: COMPLETED
+    
+    Province:
+      name: province
+      in: query
+      required: false
+      description: Filter by province (Turkish province code 01-81)
+      schema:
+        type: string
+        pattern: '^[0-9]{2}$'
+        example: "21"
+    
+    District:
+      name: district
+      in: query
+      required: false
+      description: Filter by district name
+      schema:
+        type: string
+        maxLength: 100
+        example: Çermik
+    
+    # ==================== Date Range (Query Parameters) ====================
+    
+    FromDate:
+      name: from_date
+      in: query
+      required: false
+      description: Start date (ISO 8601 date)
+      schema:
+        type: string
+        format: date
+        example: "2026-01-01"
+    
+    ToDate:
+      name: to_date
+      in: query
+      required: false
+      description: End date (ISO 8601 date)
+      schema:
+        type: string
+        format: date
+        example: "2026-12-31"
+    
+    FromTimestamp:
+      name: from
+      in: query
+      required: false
+      description: Start timestamp (ISO 8601 UTC)
+      schema:
+        type: string
+        format: date-time
+        example: "2026-01-01T00:00:00Z"
+    
+    ToTimestamp:
+      name: to
+      in: query
+      required: false
+      description: End timestamp (ISO 8601 UTC)
+      schema:
+        type: string
+        format: date-time
+        example: "2026-12-31T23:59:59Z"
+    
+    # ==================== Sorting (Query Parameters) ====================
+    
+    SortBy:
+      name: sort_by
+      in: query
+      required: false
+      description: Field to sort by
+      schema:
+        type: string
+        example: created_at
+    
+    SortOrder:
+      name: sort_order
+      in: query
+      required: false
+      description: Sort order
+      schema:
+        type: string
+        enum:
+          - asc
+          - desc
+        default: desc
+        example: desc
+    
+    # ==================== Other Common Parameters ====================
+    
+    IncludeDeleted:
+      name: include_deleted
+      in: query
+      required: false
+      description: Include soft-deleted items
+      schema:
+        type: boolean
+        default: false
+        example: false
+    
+    Expand:
+      name: expand
+      in: query
+      required: false
+      description: Comma-separated list of fields to expand (e.g., "field,user")
+      schema:
+        type: string
+        example: "field,user"
+    
+    Fields:
+      name: fields
+      in: query
+      required: false
+      description: Comma-separated list of fields to return (projection)
+      schema:
+        type: string
+        example: "id,name,status"
+    
+    IfMatch:
+      name: If-Match
+      in: header
+      required: false
+      description: ETag for conditional update (optimistic locking)
+      schema:
+        type: string
+        example: '"abc123"'
+    
+    IfNoneMatch:
+      name: If-None-Match
+      in: header
+      required: false
+      description: ETag for conditional read (caching)
+      schema:
+        type: string
+        example: '"abc123"'
+
+# Notes:
+# - All entity IDs follow pattern: {entity}_{24-char-hex}
+# - Pagination supports both offset-based and cursor-based
+# - Filtering respects RBAC (user sees only authorized data)
+# - Date/time always in ISO 8601 UTC
+# - Turkish-specific: province (01-81), district names

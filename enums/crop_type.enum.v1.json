@@ -1,0 +1,84 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://api.tarlaanaliz.com/enums/crop_type.enum.v1.json",
+  "title": "CropType",
+  "description": "Agricultural crop types with GAP (Southeastern Anatolia Project) region priorities",
+  "type": "string",
+  "enum": [
+    "COTTON",
+    "PISTACHIO",
+    "MAIZE",
+    "WHEAT",
+    "SUNFLOWER",
+    "GRAPE",
+    "HAZELNUT",
+    "OLIVE",
+    "RED_LENTIL"
+  ],
+  "metadata": {
+    "version": "1.0.0",
+    "lastUpdated": "2026-01-26",
+    "gapPriorities": {
+      "description": "GAP region priority crops (ALL 9 crops are GAP priorities - these are the ONLY supported crops)",
+      "crops": [
+        "COTTON",
+        "PISTACHIO",
+        "WHEAT",
+        "MAIZE",
+        "SUNFLOWER",
+        "GRAPE",
+        "HAZELNUT",
+        "OLIVE",
+        "RED_LENTIL"
+      ]
+    },
+    "categories": {
+      "FIELD_CROPS": [
+        "COTTON",
+        "WHEAT",
+        "MAIZE",
+        "SUNFLOWER"
+      ],
+      "LEGUMES": [
+        "RED_LENTIL"
+      ],
+      "ORCHARDS": [
+        "PISTACHIO",
+        "HAZELNUT",
+        "OLIVE"
+      ],
+      "VINEYARDS": [
+        "GRAPE"
+      ]
+    },
+    "displayNames": {
+      "tr": {
+        "COTTON": "Pamuk",
+        "PISTACHIO": "Antep Fıstığı",
+        "MAIZE": "Mısır",
+        "WHEAT": "Buğday",
+        "SUNFLOWER": "Ayçiçeği",
+        "GRAPE": "Üzüm",
+        "HAZELNUT": "Fındık",
+        "OLIVE": "Zeytin",
+        "RED_LENTIL": "Kırmızı Mercimek"
+      },
+      "en": {
+        "COTTON": "Cotton",
+        "PISTACHIO": "Pistachio",
+        "MAIZE": "Maize (Corn)",
+        "WHEAT": "Wheat",
+        "SUNFLOWER": "Sunflower",
+        "GRAPE": "Grape",
+        "HAZELNUT": "Hazelnut",
+        "OLIVE": "Olive",
+        "RED_LENTIL": "Red Lentil"
+      }
+    }
+  },
+  "notes": {
+    "breaking_change_policy": "Adding new crop types is non-breaking (MINOR). Removing or renaming crop types is breaking (MAJOR) and requires migration guide.",
+    "gap_region": "GAP (Güneydoğu Anadolu Projesi) region includes: Adıyaman, Batman, Diyarbakır, Gaziantep, Kilis, Mardin, Siirt, Şanlıurfa, Şırnak",
+    "usage": "This enum is used across schemas (Field, Mission, Pricing) and UI components. Always reference this canonical source."
+  }
+}

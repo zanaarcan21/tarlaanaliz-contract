@@ -1,0 +1,235 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://api.tarlaanaliz.com/schemas/platform/pricing.v1.schema.json",
+  "title": "PriceBook",
+  "description": "Price catalog with immutable snapshots. Single source of truth for all pricing (per KR-022).",
+  "type": "object",
+  "properties": {
+    "id": {
+      "$ref": "#/$defs/PriceBookId",
+      "description": "Unique price book identifier"
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$",
+      "description": "Price book version (semantic versioning)"
+    },
+    "effective_from": {
+      "$ref": "#/$defs/Timestamp",
+      "description": "When this price book becomes effective"
+    },
+    "effective_until": {
+      "$ref": "#/$defs/Timestamp",
+      "description": "When this price book expires (null = current)"
+    },
+    "status": {
+      "type": "string",
+      "enum": ["DRAFT", "ACTIVE", "SUPERSEDED", "ARCHIVED"],
+      "description": "Price book status"
+    },
+    "prices": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/PriceItem"
+      },
+      "minItems": 1,
+      "description": "Price items (crop + analysis type combinations)"
+    },
+    "created_by": {
+      "type": "string",
+      "pattern": "^user_[a-z0-9]{24}$",
+      "description": "Admin who created this price book"
+    },
+    "approved_by": {
+      "type": "string",
+      "pattern": "^user_[a-z0-9]{24}$",
+      "description": "Admin who approved this price book"
+    },
+    "created_at": {
+      "$ref": "#/$defs/Timestamp",
+      "description": "Creation timestamp"
+    },
+    "approved_at": {
+      "$ref": "#/$defs/Timestamp",
+      "description": "Approval timestamp"
+    },
+    "metadata": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "Additional metadata"
+    }
+  },
+  "required": [
+    "id",
+    "version",
+    "effective_from",
+    "status",
+    "prices",
+    "created_by",
+    "created_at"
+  ],
+  "unevaluatedProperties": false,
+  "$defs": {
+    "PriceBookId": {
+      "type": "string",
+      "pattern": "^pricebook_[a-z0-9]{24}$",
+      "description": "Price book identifier format: pricebook_{24-char-hex}"
+    },
+    "PriceItem": {
+      "type": "object",
+      "title": "Price Item",
+      "description": "Price for specific crop + analysis type + subscription type combination",
+      "properties": {
+        "item_id": {
+          "type": "string",
+          "description": "Unique item identifier within price book"
+        },
+        "crop_type": {
+          "type": "string",
+          "description": "Crop type (reference: enums/crop_type.enum.v1.json - 8 GAP crops)"
+        },
+        "analysis_types": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "description": "Analysis type (reference: enums/analysis_type.enum.v1.json - KR-002: 7 map layers)"
+          },
+          "minItems": 1,
+          "description": "Included analysis types"
+        },
+        "subscription_type": {
+          "type": "string",
+          "enum": ["ONE_TIME", "ANNUAL"],
+          "description": "Subscription type (per KR-020: tek seferlik or yıllık abonelik)"
+        },
+        "price_per_donum": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Price per donum (Turkish land unit: 1 donum ≈ 0.1 hectare)"
+        },
+        "currency": {
+          "type": "string",
+          "enum": ["TRY"],
+          "description": "Currency (always TRY for Turkey)"
+        },
+        "tax_rate": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100,
+          "description": "VAT rate (KDV) percentage (e.g., 20 for 20%)"
+        },
+        "minimum_area_donum": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Minimum area in donum (optional)"
+        },
+        "maximum_area_donum": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Maximum area in donum (optional)"
+        },
+        "recommended_scan_period_days": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Recommended scan period for this crop (per KR-024)"
+        },
+        "max_scans_per_year": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Maximum scans per year (for annual subscription)"
+        },
+        "description": {
+          "type": "string",
+          "maxLength": 500,
+          "description": "Price item description"
+        }
+      },
+      "required": [
+        "item_id",
+        "crop_type",
+        "analysis_types",
+        "subscription_type",
+        "price_per_donum",
+        "currency",
+        "tax_rate"
+      ],
+      "unevaluatedProperties": false
+    },
+    "Timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 timestamp (UTC)"
+    }
+  },
+  "examples": [
+    {
+      "id": "pricebook_60a7f1b8c9d4e5f6a7b8c9d0",
+      "version": "1.0.0",
+      "effective_from": "2026-01-01T00:00:00Z",
+      "effective_until": null,
+      "status": "ACTIVE",
+      "prices": [
+        {
+          "item_id": "cotton_onetime_001",
+          "crop_type": "COTTON",
+          "analysis_types": ["HEALTH", "DISEASE", "PEST", "FUNGUS", "WEED", "WATER_STRESS", "NITROGEN_STRESS"],
+          "subscription_type": "ONE_TIME",
+          "price_per_donum": 15.0,
+          "currency": "TRY",
+          "tax_rate": 20,
+          "recommended_scan_period_days": 10,
+          "description": "Pamuk - Tek seferlik analiz - 7 katman"
+        },
+        {
+          "item_id": "cotton_annual_001",
+          "crop_type": "COTTON",
+          "analysis_types": ["HEALTH", "DISEASE", "PEST", "FUNGUS", "WEED", "WATER_STRESS", "NITROGEN_STRESS"],
+          "subscription_type": "ANNUAL",
+          "price_per_donum": 120.0,
+          "currency": "TRY",
+          "tax_rate": 20,
+          "recommended_scan_period_days": 10,
+          "max_scans_per_year": 15,
+          "description": "Pamuk - Yıllık abonelik - 7 katman - 15 tarama"
+        },
+        {
+          "item_id": "pistachio_onetime_001",
+          "crop_type": "PISTACHIO",
+          "analysis_types": ["HEALTH", "DISEASE", "PEST", "FUNGUS"],
+          "subscription_type": "ONE_TIME",
+          "price_per_donum": 18.0,
+          "currency": "TRY",
+          "tax_rate": 20,
+          "recommended_scan_period_days": 12,
+          "description": "Antep Fıstığı - Tek seferlik analiz - 4 katman"
+        },
+        {
+          "item_id": "wheat_annual_001",
+          "crop_type": "WHEAT",
+          "analysis_types": ["HEALTH", "DISEASE", "WEED", "NITROGEN_STRESS"],
+          "subscription_type": "ANNUAL",
+          "price_per_donum": 80.0,
+          "currency": "TRY",
+          "tax_rate": 20,
+          "recommended_scan_period_days": 12,
+          "max_scans_per_year": 8,
+          "description": "Buğday - Yıllık abonelik - 4 katman - 8 tarama"
+        }
+      ],
+      "created_by": "user_admin_001",
+      "approved_by": "user_admin_002",
+      "created_at": "2025-12-15T10:00:00Z",
+      "approved_at": "2025-12-20T14:00:00Z"
+    }
+  ],
+  "notes": {
+    "immutability": "Price books are IMMUTABLE after approval. Changes require creating new version with new effective_from date. Per KR-022: 'gecmis siparislerin fiyati sonradan degismez'.",
+    "snapshot": "When order/subscription is created, price snapshot is written to order. Order always references specific pricebook_id + item_id.",
+    "single_source": "PriceBook is SINGLE SOURCE OF TRUTH. Per KR-022: 'Fiyatlar uygulamada serbest yazilmaz; tek kaynak PriceBook'.",
+    "versioning": "Semantic versioning. MAJOR = breaking changes (item removal), MINOR = new items, PATCH = metadata/description changes.",
+    "audit_log": "All price changes MUST be logged to audit log. Per KR-020: 'Degisiklikler audit log'a yazilir'.",
+    "donum_unit": "Pricing in DONUM (Turkish land unit). 1 donum ≈ 1000 m² ≈ 0.1 hectare. Per KR-021: 'Birim: donum'.",
+    "subscription_types": "Per KR-020: 'tek seferlik analiz veya yillik abonelik'. Annual subscription includes multiple scans.",
+    "kr_reference": "Pricing policy in KR-020, KR-021, KR-022. Scan periods in KR-024."
+  }
+}

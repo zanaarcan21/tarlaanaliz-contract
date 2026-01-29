@@ -1,0 +1,291 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://api.tarlaanaliz.com/schemas/core/field.v1.schema.json",
+  "title": "Field",
+  "description": "Agricultural field registration with boundary, crop type, and season information. PII-free, owner relationship managed via RBAC.",
+  "type": "object",
+  "properties": {
+    "id": {
+      "$ref": "#/$defs/FieldId",
+      "description": "Unique field identifier"
+    },
+    "name": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200,
+      "description": "Human-readable field name"
+    },
+    "boundary": {
+      "$ref": "#/$defs/GeoRef",
+      "description": "Field boundary geometry reference"
+    },
+    "area_hectares": {
+      "type": "number",
+      "minimum": 0,
+      "exclusiveMinimum": true,
+      "description": "Field area in hectares (calculated from boundary)"
+    },
+    "crop_type": {
+      "type": "string",
+      "description": "Current crop type (reference: enums/crop_type.enum.v1.json)"
+    },
+    "season": {
+      "$ref": "#/$defs/SeasonRef",
+      "description": "Growing season information"
+    },
+    "cadastral_info": {
+      "$ref": "#/$defs/CadastralInfo",
+      "description": "Optional cadastral parcel information"
+    },
+    "location": {
+      "$ref": "#/$defs/LocationInfo",
+      "description": "Administrative location (province, district, village)"
+    },
+    "status": {
+      "type": "string",
+      "enum": ["ACTIVE", "INACTIVE", "ARCHIVED"],
+      "default": "ACTIVE",
+      "description": "Field registration status"
+    },
+    "notes": {
+      "type": "string",
+      "maxLength": 1000,
+      "description": "Optional field notes"
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "maxLength": 50
+      },
+      "maxItems": 20,
+      "uniqueItems": true,
+      "description": "Custom tags for organization"
+    },
+    "created_at": {
+      "$ref": "#/$defs/Timestamp",
+      "description": "Field registration timestamp"
+    },
+    "updated_at": {
+      "$ref": "#/$defs/Timestamp",
+      "description": "Last update timestamp"
+    },
+    "metadata": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "Optional metadata for extensions"
+    }
+  },
+  "required": [
+    "id",
+    "name",
+    "boundary",
+    "area_hectares",
+    "crop_type",
+    "season",
+    "location",
+    "status",
+    "created_at",
+    "updated_at"
+  ],
+  "unevaluatedProperties": false,
+  "$defs": {
+    "FieldId": {
+      "type": "string",
+      "pattern": "^field_[a-z0-9]{24}$",
+      "description": "Field identifier format: field_{24-char-hex}"
+    },
+    "GeoRef": {
+      "type": "object",
+      "title": "Geometry Reference",
+      "description": "Reference to field boundary geometry",
+      "properties": {
+        "type": {
+          "type": "string",
+          "const": "Polygon",
+          "description": "GeoJSON geometry type"
+        },
+        "coordinates": {
+          "type": "array",
+          "description": "GeoJSON Polygon coordinates [exterior ring, holes?]",
+          "items": {
+            "type": "array",
+            "items": {
+              "type": "array",
+              "items": {
+                "type": "number"
+              },
+              "minItems": 2,
+              "maxItems": 3
+            },
+            "minItems": 4,
+            "description": "Linear ring (first and last point must be identical)"
+          },
+          "minItems": 1
+        },
+        "crs": {
+          "type": "string",
+          "const": "EPSG:4326",
+          "description": "Coordinate reference system (WGS84)"
+        }
+      },
+      "required": ["type", "coordinates"],
+      "unevaluatedProperties": false
+    },
+    "SeasonRef": {
+      "type": "object",
+      "title": "Growing Season Reference",
+      "description": "Season and planting information",
+      "properties": {
+        "year": {
+          "type": "integer",
+          "minimum": 2020,
+          "maximum": 2050,
+          "description": "Crop year"
+        },
+        "season_type": {
+          "type": "string",
+          "enum": ["SPRING", "SUMMER", "FALL", "WINTER", "YEAR_ROUND"],
+          "description": "Season type"
+        },
+        "planting_date": {
+          "$ref": "#/$defs/Date",
+          "description": "Actual or planned planting date"
+        },
+        "harvest_date": {
+          "$ref": "#/$defs/Date",
+          "description": "Expected or actual harvest date"
+        }
+      },
+      "required": ["year", "season_type"],
+      "unevaluatedProperties": false
+    },
+    "CadastralInfo": {
+      "type": "object",
+      "title": "Cadastral Information",
+      "description": "Optional cadastral parcel identifiers",
+      "properties": {
+        "province_code": {
+          "type": "string",
+          "pattern": "^[0-9]{2}$",
+          "description": "Province (il) code (01-81)"
+        },
+        "district_code": {
+          "type": "string",
+          "pattern": "^[0-9]{4}$",
+          "description": "District (ilçe) code"
+        },
+        "village_code": {
+          "type": "string",
+          "description": "Village/neighborhood (köy/mahalle) code"
+        },
+        "parcel_number": {
+          "type": "string",
+          "description": "Cadastral parcel number (ada/parsel)"
+        },
+        "block_number": {
+          "type": "string",
+          "description": "Block number (ada)"
+        },
+        "plot_number": {
+          "type": "string",
+          "description": "Plot number (parsel)"
+        }
+      },
+      "unevaluatedProperties": false
+    },
+    "LocationInfo": {
+      "type": "object",
+      "title": "Administrative Location",
+      "description": "Administrative location hierarchy",
+      "properties": {
+        "province": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 50,
+          "description": "Province (il) name"
+        },
+        "province_code": {
+          "type": "string",
+          "pattern": "^[0-9]{2}$",
+          "description": "Province code (01-81)"
+        },
+        "district": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 50,
+          "description": "District (ilçe) name"
+        },
+        "village": {
+          "type": "string",
+          "maxLength": 100,
+          "description": "Village/neighborhood name"
+        },
+        "region": {
+          "type": "string",
+          "enum": ["MARMARA", "EGE", "AKDENIZ", "ICANADOLU", "KARADENIZ", "DOGUANADOLU", "GUNEYDOGUANADOLU"],
+          "description": "Geographic region"
+        }
+      },
+      "required": ["province", "district"],
+      "unevaluatedProperties": false
+    },
+    "Timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 timestamp (UTC)"
+    },
+    "Date": {
+      "type": "string",
+      "format": "date",
+      "description": "ISO 8601 date (YYYY-MM-DD)"
+    }
+  },
+  "examples": [
+    {
+      "id": "field_507f1f77bcf86cd799439011",
+      "name": "Kuzey Tarla - Pamuk",
+      "boundary": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [40.2181, 37.9158],
+            [40.2185, 37.9158],
+            [40.2185, 37.9162],
+            [40.2181, 37.9162],
+            [40.2181, 37.9158]
+          ]
+        ],
+        "crs": "EPSG:4326"
+      },
+      "area_hectares": 4.5,
+      "crop_type": "COTTON",
+      "season": {
+        "year": 2026,
+        "season_type": "SUMMER",
+        "planting_date": "2026-04-15",
+        "harvest_date": "2026-10-01"
+      },
+      "location": {
+        "province": "Diyarbakır",
+        "province_code": "21",
+        "district": "Çınar",
+        "village": "Bağlıca",
+        "region": "GUNEYDOGUANADOLU"
+      },
+      "status": "ACTIVE",
+      "tags": ["gap", "pamuk", "2026"],
+      "created_at": "2026-01-15T08:30:00Z",
+      "updated_at": "2026-01-15T08:30:00Z"
+    }
+  ],
+  "notes": {
+    "owner_relationship": "Field ownership is NOT stored in this schema. Owner relationship is managed via RBAC claims and separate user-field associations.",
+    "rbac": "Access control: FARMER can view/edit own fields, IL_OPERATOR can view province fields, PLATFORM_ADMIN can view all.",
+    "pii_free": "This schema contains NO PII. Field name may contain user-chosen text but should not include personal information.",
+    "boundary_validation": "Boundary must be valid GeoJSON Polygon. Self-intersecting polygons are rejected.",
+    "area_calculation": "area_hectares is calculated from boundary geometry and should match within 1% tolerance.",
+    "kr_reference": "Field model defined in KR-013 (Farmer field management).",
+    "events": "Field creation triggers events/field_created.v1 event."
+  }
+}

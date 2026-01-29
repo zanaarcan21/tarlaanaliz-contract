@@ -1,0 +1,388 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://api.tarlaanaliz.com/schemas/edge/edge_metadata.v1.schema.json",
+  "title": "EdgeMetadata",
+  "description": "Station/kiosk device metadata and security status for offline operation verification",
+  "type": "object",
+  "properties": {
+    "kiosk_id": {
+      "type": "string",
+      "pattern": "^kiosk_[a-z0-9]{24}$",
+      "description": "Unique kiosk identifier"
+    },
+    "kiosk_name": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 100,
+      "description": "Human-readable kiosk name"
+    },
+    "location": {
+      "$ref": "#/$defs/KioskLocation",
+      "description": "Physical location of kiosk"
+    },
+    "app_version": {
+      "$ref": "#/$defs/Version",
+      "description": "Kiosk application version"
+    },
+    "os_info": {
+      "$ref": "#/$defs/OsInfo",
+      "description": "Operating system information"
+    },
+    "hardware": {
+      "$ref": "#/$defs/HardwareInfo",
+      "description": "Hardware specifications"
+    },
+    "certificate": {
+      "$ref": "#/$defs/Certificate",
+      "description": "TLS certificate information"
+    },
+    "antivirus": {
+      "$ref": "#/$defs/AntivirusInfo",
+      "description": "Antivirus software information"
+    },
+    "disk_space": {
+      "$ref": "#/$defs/DiskSpace",
+      "description": "Disk space information"
+    },
+    "network": {
+      "$ref": "#/$defs/NetworkStatus",
+      "description": "Network connectivity status"
+    },
+    "offline_mode": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether kiosk is operating in offline mode"
+    },
+    "last_sync_at": {
+      "$ref": "#/$defs/Timestamp",
+      "description": "Last successful sync with platform"
+    },
+    "status": {
+      "type": "string",
+      "enum": ["ACTIVE", "MAINTENANCE", "OFFLINE", "DECOMMISSIONED"],
+      "default": "ACTIVE",
+      "description": "Kiosk operational status"
+    },
+    "health_check": {
+      "$ref": "#/$defs/HealthCheck",
+      "description": "System health check results"
+    },
+    "created_at": {
+      "$ref": "#/$defs/Timestamp",
+      "description": "Kiosk registration timestamp"
+    },
+    "updated_at": {
+      "$ref": "#/$defs/Timestamp",
+      "description": "Last metadata update timestamp"
+    }
+  },
+  "required": [
+    "kiosk_id",
+    "kiosk_name",
+    "location",
+    "app_version",
+    "os_info",
+    "hardware",
+    "certificate",
+    "antivirus",
+    "disk_space",
+    "offline_mode",
+    "status",
+    "created_at",
+    "updated_at"
+  ],
+  "unevaluatedProperties": false,
+  "$defs": {
+    "KioskLocation": {
+      "type": "object",
+      "title": "Kiosk Location",
+      "properties": {
+        "province": {
+          "type": "string",
+          "description": "Province (il) name"
+        },
+        "province_code": {
+          "type": "string",
+          "pattern": "^[0-9]{2}$",
+          "description": "Province code (01-81)"
+        },
+        "district": {
+          "type": "string",
+          "description": "District (ilçe) name"
+        },
+        "address": {
+          "type": "string",
+          "maxLength": 500,
+          "description": "Physical address"
+        },
+        "coordinates": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          },
+          "minItems": 2,
+          "maxItems": 2,
+          "description": "[longitude, latitude]"
+        }
+      },
+      "required": ["province", "province_code", "district"],
+      "unevaluatedProperties": false
+    },
+    "Version": {
+      "type": "object",
+      "title": "Version Information",
+      "properties": {
+        "major": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "minor": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "patch": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "build": {
+          "type": "string",
+          "description": "Build identifier or commit hash"
+        },
+        "string": {
+          "type": "string",
+          "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+",
+          "description": "Version string (e.g., 1.2.3)"
+        }
+      },
+      "required": ["major", "minor", "patch", "string"],
+      "unevaluatedProperties": false
+    },
+    "OsInfo": {
+      "type": "object",
+      "title": "Operating System Information",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "OS name (e.g., Ubuntu, Windows)"
+        },
+        "version": {
+          "type": "string",
+          "description": "OS version"
+        },
+        "kernel": {
+          "type": "string",
+          "description": "Kernel version"
+        },
+        "architecture": {
+          "type": "string",
+          "enum": ["x86_64", "aarch64", "arm64"],
+          "description": "CPU architecture"
+        }
+      },
+      "required": ["name", "version", "architecture"],
+      "unevaluatedProperties": false
+    },
+    "HardwareInfo": {
+      "type": "object",
+      "title": "Hardware Information",
+      "properties": {
+        "fingerprint": {
+          "$ref": "#/$defs/Fingerprint",
+          "description": "Hardware fingerprint for device identification"
+        },
+        "cpu": {
+          "type": "string",
+          "description": "CPU model"
+        },
+        "ram_gb": {
+          "type": "number",
+          "minimum": 0,
+          "description": "RAM in GB"
+        },
+        "storage_gb": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Total storage in GB"
+        }
+      },
+      "required": ["fingerprint", "cpu", "ram_gb", "storage_gb"],
+      "unevaluatedProperties": false
+    },
+    "Fingerprint": {
+      "type": "string",
+      "pattern": "^[a-f0-9]{64}$",
+      "description": "SHA-256 hardware fingerprint"
+    },
+    "Certificate": {
+      "type": "object",
+      "title": "TLS Certificate",
+      "properties": {
+        "thumbprint": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$",
+          "description": "Certificate thumbprint (SHA-256)"
+        },
+        "subject": {
+          "type": "string",
+          "description": "Certificate subject (CN, O, OU)"
+        },
+        "issuer": {
+          "type": "string",
+          "description": "Certificate issuer"
+        },
+        "valid_from": {
+          "$ref": "#/$defs/Timestamp",
+          "description": "Certificate validity start"
+        },
+        "expires_at": {
+          "$ref": "#/$defs/Timestamp",
+          "description": "Certificate expiration (CRITICAL: expired cert blocks intake)"
+        },
+        "days_until_expiry": {
+          "type": "integer",
+          "description": "Days remaining until expiration"
+        }
+      },
+      "required": ["thumbprint", "subject", "issuer", "valid_from", "expires_at", "days_until_expiry"],
+      "unevaluatedProperties": false
+    },
+    "AntivirusInfo": {
+      "type": "object",
+      "title": "Antivirus Information",
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "Antivirus software name"
+        },
+        "version": {
+          "type": "string",
+          "description": "Antivirus version"
+        },
+        "signature_version": {
+          "type": "string",
+          "description": "Virus signature database version"
+        },
+        "last_update": {
+          "$ref": "#/$defs/Timestamp",
+          "description": "Last signature update timestamp"
+        },
+        "enabled": {
+          "type": "boolean",
+          "description": "Whether antivirus is enabled"
+        },
+        "real_time_protection": {
+          "type": "boolean",
+          "description": "Whether real-time protection is active"
+        }
+      },
+      "required": ["name", "version", "signature_version", "last_update", "enabled"],
+      "unevaluatedProperties": false
+    },
+    "DiskSpace": {
+      "type": "object",
+      "title": "Disk Space",
+      "properties": {
+        "total_gb": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Total disk space in GB"
+        },
+        "used_gb": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Used disk space in GB"
+        },
+        "available_gb": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Available disk space in GB"
+        },
+        "usage_percent": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100,
+          "description": "Disk usage percentage"
+        }
+      },
+      "required": ["total_gb", "used_gb", "available_gb", "usage_percent"],
+      "unevaluatedProperties": false
+    },
+    "NetworkStatus": {
+      "type": "object",
+      "title": "Network Status",
+      "properties": {
+        "connected": {
+          "type": "boolean",
+          "description": "Whether network is connected"
+        },
+        "connection_type": {
+          "type": "string",
+          "enum": ["ETHERNET", "WIFI", "CELLULAR", "OFFLINE"],
+          "description": "Connection type"
+        },
+        "ip_address": {
+          "type": "string",
+          "description": "Local IP address"
+        },
+        "last_ping_success": {
+          "$ref": "#/$defs/Timestamp",
+          "description": "Last successful ping to platform"
+        }
+      },
+      "required": ["connected", "connection_type"],
+      "unevaluatedProperties": false
+    },
+    "HealthCheck": {
+      "type": "object",
+      "title": "Health Check",
+      "properties": {
+        "overall_status": {
+          "type": "string",
+          "enum": ["HEALTHY", "WARNING", "CRITICAL", "UNKNOWN"],
+          "description": "Overall health status"
+        },
+        "checks": {
+          "type": "object",
+          "properties": {
+            "certificate_valid": {
+              "type": "boolean",
+              "description": "Certificate is valid and not expired"
+            },
+            "antivirus_updated": {
+              "type": "boolean",
+              "description": "Antivirus signatures are up-to-date (< 7 days old)"
+            },
+            "disk_space_available": {
+              "type": "boolean",
+              "description": "Sufficient disk space (> 10GB available)"
+            },
+            "network_reachable": {
+              "type": "boolean",
+              "description": "Network is reachable or offline mode is acceptable"
+            }
+          },
+          "unevaluatedProperties": false
+        },
+        "last_check_at": {
+          "$ref": "#/$defs/Timestamp",
+          "description": "Last health check timestamp"
+        }
+      },
+      "required": ["overall_status", "checks", "last_check_at"],
+      "unevaluatedProperties": false
+    },
+    "Timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 timestamp (UTC)"
+    }
+  },
+  "notes": {
+    "certificate_expiry": "CRITICAL: Kiosk with expired certificate CANNOT perform intake. CI policy enforces certificate renewal alerts 30 days before expiry.",
+    "offline_mode": "Kiosk can operate offline for up to 7 days. After 7 days without sync, quarantine decisions require manual review.",
+    "hardware_fingerprint": "Hardware fingerprint prevents unauthorized kiosk spoofing. Fingerprint change triggers security alert.",
+    "antivirus_policy": "Antivirus signatures older than 7 days trigger WARNING status. Older than 14 days triggers CRITICAL status.",
+    "sop_reference": "Kiosk setup and maintenance in SAHA_OPERASYON_SOP_v2_4_.docx Section 1.",
+    "kr_reference": "Security requirements in KR-040."
+  }
+}

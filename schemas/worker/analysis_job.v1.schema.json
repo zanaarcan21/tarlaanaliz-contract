@@ -1,0 +1,347 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://api.tarlaanaliz.com/schemas/worker/analysis_job.v1.schema.json",
+  "title": "AnalysisJob",
+  "description": "AI analysis job with input data references, model parameters, and priority. PII-free.",
+  "type": "object",
+  "properties": {
+    "id": {
+      "$ref": "#/$defs/JobId",
+      "description": "Unique job identifier"
+    },
+    "field_id": {
+      "type": "string",
+      "pattern": "^field_[a-z0-9]{24}$",
+      "description": "Associated field identifier"
+    },
+    "mission_id": {
+      "type": "string",
+      "pattern": "^mission_[a-z0-9]{24}$",
+      "description": "Associated mission identifier"
+    },
+    "batch_id": {
+      "type": "string",
+      "pattern": "^batch_[a-z0-9]{24}$",
+      "description": "Associated batch identifier"
+    },
+    "manifest_id": {
+      "type": "string",
+      "pattern": "^manifest_[a-z0-9]{24}$",
+      "description": "Associated manifest identifier"
+    },
+    "analysis_types": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "description": "Analysis types requested (reference: enums/analysis_type.enum.v1.json)"
+      },
+      "minItems": 1,
+      "uniqueItems": true,
+      "description": "Requested analysis types"
+    },
+    "crop_type": {
+      "type": "string",
+      "description": "Crop type (reference: enums/crop_type.enum.v1.json)"
+    },
+    "inputs": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/InputRef"
+      },
+      "minItems": 1,
+      "description": "Input data references (MUST include hash)"
+    },
+    "parameters": {
+      "$ref": "#/$defs/AnalysisParameters",
+      "description": "Analysis parameters and constraints"
+    },
+    "priority": {
+      "type": "string",
+      "enum": ["LOW", "NORMAL", "HIGH", "URGENT"],
+      "default": "NORMAL",
+      "description": "Job priority"
+    },
+    "status": {
+      "type": "string",
+      "enum": ["PENDING", "QUEUED", "RUNNING", "COMPLETED", "FAILED", "CANCELLED"],
+      "default": "PENDING",
+      "description": "Job status"
+    },
+    "progress": {
+      "$ref": "#/$defs/JobProgress",
+      "description": "Job progress information"
+    },
+    "worker_id": {
+      "type": "string",
+      "description": "Worker instance ID processing this job"
+    },
+    "requested_at": {
+      "$ref": "#/$defs/Timestamp",
+      "description": "Job request timestamp"
+    },
+    "started_at": {
+      "$ref": "#/$defs/Timestamp",
+      "description": "Job start timestamp"
+    },
+    "completed_at": {
+      "$ref": "#/$defs/Timestamp",
+      "description": "Job completion timestamp"
+    },
+    "timeout_at": {
+      "$ref": "#/$defs/Timestamp",
+      "description": "Job timeout timestamp"
+    },
+    "result_id": {
+      "type": "string",
+      "pattern": "^result_[a-z0-9]{24}$",
+      "description": "Associated result identifier (when completed)"
+    },
+    "error": {
+      "$ref": "#/$defs/JobError",
+      "description": "Error information (if failed)"
+    },
+    "metadata": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "Additional metadata"
+    }
+  },
+  "required": [
+    "id",
+    "field_id",
+    "mission_id",
+    "batch_id",
+    "manifest_id",
+    "analysis_types",
+    "crop_type",
+    "inputs",
+    "priority",
+    "status",
+    "requested_at"
+  ],
+  "unevaluatedProperties": false,
+  "$defs": {
+    "JobId": {
+      "type": "string",
+      "pattern": "^job_[a-z0-9]{24}$",
+      "description": "Job identifier format: job_{24-char-hex}"
+    },
+    "InputRef": {
+      "type": "object",
+      "title": "Input Reference",
+      "description": "Reference to input data file (hash REQUIRED for chain-of-evidence)",
+      "properties": {
+        "uri": {
+          "type": "string",
+          "format": "uri",
+          "description": "URI to input file (s3://, file://, etc.)"
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$",
+          "description": "SHA-256 hash (REQUIRED)"
+        },
+        "type": {
+          "type": "string",
+          "enum": ["IMAGE", "MULTISPECTRAL", "THERMAL", "FLIGHT_LOG", "METADATA", "OTHER"],
+          "description": "Input file type"
+        },
+        "size_bytes": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "File size in bytes"
+        },
+        "mime_type": {
+          "type": "string",
+          "description": "MIME type"
+        }
+      },
+      "required": ["uri", "sha256", "type"],
+      "unevaluatedProperties": false
+    },
+    "AnalysisParameters": {
+      "type": "object",
+      "title": "Analysis Parameters",
+      "description": "Parameters and constraints for analysis",
+      "properties": {
+        "model_version": {
+          "type": "string",
+          "description": "Specific model version to use (optional)"
+        },
+        "resolution": {
+          "type": "string",
+          "enum": ["LOW", "MEDIUM", "HIGH", "NATIVE"],
+          "default": "HIGH",
+          "description": "Output resolution"
+        },
+        "confidence_threshold": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "default": 0.7,
+          "description": "Minimum confidence threshold for detections"
+        },
+        "max_processing_time_minutes": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 240,
+          "default": 60,
+          "description": "Maximum processing time before timeout"
+        },
+        "output_formats": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "enum": ["GEOTIFF", "PNG", "GEOJSON", "SHAPEFILE", "CSV"]
+          },
+          "uniqueItems": true,
+          "default": ["GEOTIFF", "GEOJSON"],
+          "description": "Desired output formats"
+        },
+        "enable_visualization": {
+          "type": "boolean",
+          "default": true,
+          "description": "Generate visualization overlays"
+        },
+        "custom_parameters": {
+          "type": "object",
+          "additionalProperties": true,
+          "description": "Analysis-specific custom parameters"
+        }
+      },
+      "unevaluatedProperties": false
+    },
+    "JobProgress": {
+      "type": "object",
+      "title": "Job Progress",
+      "properties": {
+        "percent_complete": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100,
+          "description": "Progress percentage"
+        },
+        "current_stage": {
+          "type": "string",
+          "enum": [
+            "INITIALIZATION",
+            "DATA_LOADING",
+            "PREPROCESSING",
+            "INFERENCE",
+            "POSTPROCESSING",
+            "GENERATING_OUTPUTS",
+            "FINALIZING"
+          ],
+          "description": "Current processing stage"
+        },
+        "stages_completed": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Number of stages completed"
+        },
+        "total_stages": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Total number of stages"
+        },
+        "estimated_completion_at": {
+          "$ref": "#/$defs/Timestamp",
+          "description": "Estimated completion timestamp"
+        },
+        "last_update_at": {
+          "$ref": "#/$defs/Timestamp",
+          "description": "Last progress update timestamp"
+        }
+      },
+      "unevaluatedProperties": false
+    },
+    "JobError": {
+      "type": "object",
+      "title": "Job Error",
+      "properties": {
+        "code": {
+          "type": "string",
+          "description": "Error code"
+        },
+        "message": {
+          "type": "string",
+          "maxLength": 1000,
+          "description": "Error message"
+        },
+        "stage": {
+          "type": "string",
+          "description": "Stage where error occurred"
+        },
+        "retryable": {
+          "type": "boolean",
+          "description": "Whether error is retryable"
+        },
+        "retry_count": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Number of retry attempts"
+        },
+        "stack_trace": {
+          "type": "string",
+          "description": "Stack trace (for debugging)"
+        }
+      },
+      "required": ["code", "message", "retryable"],
+      "unevaluatedProperties": false
+    },
+    "Timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 timestamp (UTC)"
+    }
+  },
+  "examples": [
+    {
+      "id": "job_60a7f1b8c9d4e5f6a7b8c9d2",
+      "field_id": "field_507f1f77bcf86cd799439011",
+      "mission_id": "mission_60a7f1b8c9d4e5f6a7b8c9d0",
+      "batch_id": "batch_60a7f1b8c9d4e5f6a7b8c9d0",
+      "manifest_id": "manifest_60a7f1b8c9d4e5f6a7b8c9d1",
+      "analysis_types": ["NDVI", "NDRE", "HEALTH_INDEX", "DISEASE_DETECTION"],
+      "crop_type": "COTTON",
+      "inputs": [
+        {
+          "uri": "s3://tarlaanaliz-missions/2026/06/batch_60a7f1b8c9d4e5f6a7b8c9d0/images/",
+          "sha256": "a3f2b8c9d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1",
+          "type": "MULTISPECTRAL",
+          "size_bytes": 2515845120,
+          "mime_type": "application/x-directory"
+        }
+      ],
+      "parameters": {
+        "resolution": "HIGH",
+        "confidence_threshold": 0.75,
+        "max_processing_time_minutes": 90,
+        "output_formats": ["GEOTIFF", "GEOJSON", "PNG"],
+        "enable_visualization": true
+      },
+      "priority": "NORMAL",
+      "status": "COMPLETED",
+      "progress": {
+        "percent_complete": 100,
+        "current_stage": "FINALIZING",
+        "stages_completed": 7,
+        "total_stages": 7,
+        "last_update_at": "2026-06-15T09:45:30Z"
+      },
+      "worker_id": "worker-gpu-03",
+      "requested_at": "2026-06-15T08:05:00Z",
+      "started_at": "2026-06-15T08:10:00Z",
+      "completed_at": "2026-06-15T09:45:30Z",
+      "result_id": "result_60a7f1b8c9d4e5f6a7b8c9d3"
+    }
+  ],
+  "notes": {
+    "hash_requirement": "Input hash is REQUIRED. Job continues chain-of-evidence from intake manifest.",
+    "pii_free": "This schema contains NO PII. All references are to IDs, not user information.",
+    "one_way_flow": "YZ analysis is ONE-WAY: job → worker → result. No feedback loop to prevent data leakage.",
+    "timeout": "Jobs exceeding max_processing_time_minutes are automatically cancelled and marked FAILED.",
+    "kr_reference": "Analysis flow in KR-017 (Analysis), KR-070 (YZ Isolation), KR-071 (One-way flow).",
+    "sop_reference": "Analysis procedures in SAHA_OPERASYON_SOP_v2_4_.docx (implicit via quarantine release)."
+  }
+}

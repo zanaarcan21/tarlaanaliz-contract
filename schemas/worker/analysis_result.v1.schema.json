@@ -1,0 +1,463 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://api.tarlaanaliz.com/schemas/worker/analysis_result.v1.schema.json",
+  "title": "AnalysisResult",
+  "description": "AI analysis result with summary, metrics, layer references, and model fingerprint. PII-free.",
+  "type": "object",
+  "properties": {
+    "id": {
+      "$ref": "#/$defs/ResultId",
+      "description": "Unique result identifier"
+    },
+    "job_id": {
+      "type": "string",
+      "pattern": "^job_[a-z0-9]{24}$",
+      "description": "Associated job identifier"
+    },
+    "field_id": {
+      "type": "string",
+      "pattern": "^field_[a-z0-9]{24}$",
+      "description": "Associated field identifier"
+    },
+    "mission_id": {
+      "type": "string",
+      "pattern": "^mission_[a-z0-9]{24}$",
+      "description": "Associated mission identifier"
+    },
+    "status": {
+      "type": "string",
+      "enum": ["SUCCESS", "PARTIAL_SUCCESS", "FAILED"],
+      "description": "Result status"
+    },
+    "analysis_type": {
+      "type": "string",
+      "description": "Analysis type (reference: enums/analysis_type.enum.v1.json)"
+    },
+    "summary": {
+      "$ref": "#/$defs/ResultSummary",
+      "description": "High-level summary of findings"
+    },
+    "layers": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/LayerRef"
+      },
+      "description": "Output layer references"
+    },
+    "metrics": {
+      "$ref": "#/$defs/Metrics",
+      "description": "Quantitative metrics"
+    },
+    "detections": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/Detection"
+      },
+      "description": "Specific detections (diseases, pests, weeds)"
+    },
+    "recommendations": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/Recommendation"
+      },
+      "description": "Agronomic recommendations"
+    },
+    "model_info": {
+      "$ref": "#/$defs/ModelInfo",
+      "description": "Model fingerprint and metadata"
+    },
+    "quality": {
+      "$ref": "#/$defs/QualityMetrics",
+      "description": "Result quality metrics"
+    },
+    "created_at": {
+      "$ref": "#/$defs/Timestamp",
+      "description": "Result creation timestamp"
+    },
+    "metadata": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "Additional metadata"
+    }
+  },
+  "required": [
+    "id",
+    "job_id",
+    "field_id",
+    "mission_id",
+    "status",
+    "analysis_type",
+    "summary",
+    "layers",
+    "metrics",
+    "model_info",
+    "created_at"
+  ],
+  "unevaluatedProperties": false,
+  "$defs": {
+    "ResultId": {
+      "type": "string",
+      "pattern": "^result_[a-z0-9]{24}$",
+      "description": "Result identifier format: result_{24-char-hex}"
+    },
+    "ResultSummary": {
+      "type": "object",
+      "title": "Result Summary",
+      "description": "High-level summary of analysis findings",
+      "properties": {
+        "overall_health": {
+          "type": "string",
+          "enum": ["EXCELLENT", "GOOD", "FAIR", "POOR", "CRITICAL"],
+          "description": "Overall field health assessment"
+        },
+        "health_score": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100,
+          "description": "Numeric health score (0-100)"
+        },
+        "area_analyzed_hectares": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Area successfully analyzed (hectares)"
+        },
+        "coverage_percent": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100,
+          "description": "Coverage percentage of field"
+        },
+        "issues_detected": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Number of issues detected"
+        },
+        "critical_issues": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Number of critical issues requiring immediate attention"
+        },
+        "description": {
+          "type": "string",
+          "maxLength": 1000,
+          "description": "Human-readable summary"
+        }
+      },
+      "required": ["overall_health", "health_score", "area_analyzed_hectares", "coverage_percent"],
+      "unevaluatedProperties": false
+    },
+    "LayerRef": {
+      "type": "object",
+      "title": "Layer Reference",
+      "description": "Reference to output layer (map, visualization)",
+      "properties": {
+        "layer_id": {
+          "type": "string",
+          "pattern": "^layer_[a-z0-9]{24}$",
+          "description": "Unique layer identifier"
+        },
+        "name": {
+          "type": "string",
+          "description": "Layer name"
+        },
+        "type": {
+          "type": "string",
+          "enum": [
+            "RASTER",
+            "VECTOR",
+            "HEATMAP",
+            "CLASSIFICATION",
+            "DETECTION",
+            "PRESCRIPTION"
+          ],
+          "description": "Layer type"
+        },
+        "uri": {
+          "type": "string",
+          "format": "uri",
+          "description": "URI to layer file"
+        },
+        "format": {
+          "type": "string",
+          "enum": ["GEOTIFF", "PNG", "GEOJSON", "SHAPEFILE"],
+          "description": "Layer format"
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$",
+          "description": "Layer file hash"
+        },
+        "size_bytes": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Layer file size"
+        },
+        "style_ref": {
+          "type": "string",
+          "description": "Reference to layer style (from layer_registry)"
+        },
+        "bounds": {
+          "type": "array",
+          "items": {
+            "type": "number"
+          },
+          "minItems": 4,
+          "maxItems": 4,
+          "description": "Bounding box [west, south, east, north]"
+        },
+        "preview_uri": {
+          "type": "string",
+          "format": "uri",
+          "description": "URI to preview thumbnail"
+        }
+      },
+      "required": ["layer_id", "name", "type", "uri", "format", "sha256"],
+      "unevaluatedProperties": false
+    },
+    "Metrics": {
+      "type": "object",
+      "title": "Metrics",
+      "description": "Quantitative analysis metrics per KR-002 map layers",
+      "properties": {
+        "health_distribution": {
+          "type": "object",
+          "properties": {
+            "excellent_percent": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 100
+            },
+            "good_percent": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 100
+            },
+            "fair_percent": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 100
+            },
+            "poor_percent": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 100
+            },
+            "critical_percent": {
+              "type": "number",
+              "minimum": 0,
+              "maximum": 100
+            }
+          },
+          "unevaluatedProperties": false
+        },
+        "stress_indicators": {
+          "type": "object",
+          "properties": {
+            "water_stress_area_hectares": {
+              "type": "number",
+              "minimum": 0
+            },
+            "nitrogen_stress_area_hectares": {
+              "type": "number",
+              "minimum": 0
+            }
+          },
+          "unevaluatedProperties": false
+        },
+        "custom_metrics": {
+          "type": "object",
+          "additionalProperties": true,
+          "description": "Analysis-specific custom metrics"
+        }
+      },
+      "unevaluatedProperties": false
+    },
+    "Detection": {
+      "type": "object",
+      "title": "Detection",
+      "description": "Specific detection (disease, pest, weed)",
+      "properties": {
+        "detection_id": {
+          "type": "string",
+          "description": "Unique detection identifier"
+        },
+        "type": {
+          "type": "string",
+          "enum": ["DISEASE", "PEST", "WEED", "OTHER"],
+          "description": "Detection type"
+        },
+        "class": {
+          "type": "string",
+          "description": "Specific class (e.g., 'cotton_leaf_spot')"
+        },
+        "confidence": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1,
+          "description": "Detection confidence (0-1)"
+        },
+        "severity": {
+          "type": "string",
+          "enum": ["LOW", "MEDIUM", "HIGH", "CRITICAL"],
+          "description": "Severity level"
+        },
+        "area_hectares": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Affected area (hectares)"
+        },
+        "geometry": {
+          "type": "object",
+          "description": "GeoJSON geometry of affected area"
+        },
+        "description": {
+          "type": "string",
+          "maxLength": 500,
+          "description": "Detection description"
+        }
+      },
+      "required": ["detection_id", "type", "class", "confidence", "severity"],
+      "unevaluatedProperties": false
+    },
+    "Recommendation": {
+      "type": "object",
+      "title": "Recommendation",
+      "properties": {
+        "recommendation_id": {
+          "type": "string",
+          "description": "Unique recommendation identifier"
+        },
+        "priority": {
+          "type": "string",
+          "enum": ["LOW", "MEDIUM", "HIGH", "URGENT"],
+          "description": "Recommendation priority"
+        },
+        "category": {
+          "type": "string",
+          "enum": [
+            "IRRIGATION",
+            "FERTILIZATION",
+            "PEST_CONTROL",
+            "DISEASE_MANAGEMENT",
+            "HARVEST_TIMING",
+            "GENERAL"
+          ],
+          "description": "Recommendation category"
+        },
+        "title": {
+          "type": "string",
+          "maxLength": 200,
+          "description": "Recommendation title"
+        },
+        "description": {
+          "type": "string",
+          "maxLength": 2000,
+          "description": "Detailed recommendation"
+        },
+        "affected_area_hectares": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Area this recommendation applies to"
+        },
+        "estimated_cost": {
+          "type": "object",
+          "description": "Estimated implementation cost (reference: money.v1.schema.json)"
+        }
+      },
+      "required": ["recommendation_id", "priority", "category", "title", "description"],
+      "unevaluatedProperties": false
+    },
+    "ModelInfo": {
+      "type": "object",
+      "title": "Model Information",
+      "description": "Model fingerprint and metadata for reproducibility",
+      "properties": {
+        "model_name": {
+          "type": "string",
+          "description": "Model name"
+        },
+        "model_version": {
+          "type": "string",
+          "description": "Model version"
+        },
+        "model_fingerprint": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$",
+          "description": "Model weights SHA-256 hash"
+        },
+        "framework": {
+          "type": "string",
+          "description": "ML framework (e.g., PyTorch, TensorFlow)"
+        },
+        "framework_version": {
+          "type": "string",
+          "description": "Framework version"
+        },
+        "trained_on": {
+          "type": "string",
+          "description": "Training dataset identifier"
+        },
+        "training_date": {
+          "$ref": "#/$defs/Date",
+          "description": "Model training date"
+        }
+      },
+      "required": ["model_name", "model_version", "model_fingerprint"],
+      "unevaluatedProperties": false
+    },
+    "QualityMetrics": {
+      "type": "object",
+      "title": "Quality Metrics",
+      "properties": {
+        "image_quality_score": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100,
+          "description": "Input image quality score (0-100)"
+        },
+        "cloud_cover_percent": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100,
+          "description": "Cloud cover percentage"
+        },
+        "shadow_percent": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100,
+          "description": "Shadow percentage"
+        },
+        "blur_score": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100,
+          "description": "Blur score (lower is better)"
+        },
+        "overall_quality": {
+          "type": "string",
+          "enum": ["EXCELLENT", "GOOD", "FAIR", "POOR"],
+          "description": "Overall quality assessment"
+        }
+      },
+      "unevaluatedProperties": false
+    },
+    "Timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 timestamp (UTC)"
+    },
+    "Date": {
+      "type": "string",
+      "format": "date",
+      "description": "ISO 8601 date (YYYY-MM-DD)"
+    }
+  },
+  "notes": {
+    "pii_free": "This schema contains NO PII. All references are to IDs, not user information.",
+    "layer_registry": "Layer style_ref references platform/layer_registry.v1.schema.json for consistent styling per KR-064.",
+    "model_fingerprint": "Model fingerprint (SHA-256 of weights) ensures reproducibility and version tracking.",
+    "kr_reference": "Analysis result maps defined in KR-002 (7 map layers only). Result delivery per KR-017, KR-071 (one-way flow).",
+    "one_way_flow": "Result is final output from worker. No feedback loop to worker (one-way flow per KR-071).",
+    "map_layers_only": "Results are MAP LAYERS only (per KR-002). No prescriptions, no recommendations for actions."
+  }
+}

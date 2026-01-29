@@ -1,0 +1,228 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://tarlaanaliz.com/schemas/platform/payment_intent.v1.schema.json",
+  "title": "PaymentIntentV1",
+  "type": "object",
+  "additionalProperties": false,
+  "description": "PaymentIntent: mission/subscription için ödeme talebi. Kredi kartı otomatik, IBAN dekont manuel onay.",
+  "properties": {
+    "payment_intent_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "target_type": {
+      "$ref": "../../enums/payment_target_type.v1.json"
+    },
+    "target_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "payer_user_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Ödeyen kullanıcı (PII değil; dahili user id)."
+    },
+    "field_id": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Opsiyonel: mission hedeflerinde raporlama kolaylığı."
+    },
+    "payment_method": {
+      "$ref": "../../enums/payment_method.v1.json"
+    },
+    "status": {
+      "$ref": "../../enums/payment_status.v1.json"
+    },
+    "amount_total": {
+      "type": "number",
+      "minimum": 0,
+      "description": "Toplam tutar (TRY). v1: decimal; v2: amount_kurus standardı."
+    },
+    "currency": {
+      "type": "string",
+      "default": "TRY",
+      "minLength": 3,
+      "maxLength": 3
+    },
+    "reference_code": {
+      "type": "string",
+      "minLength": 6,
+      "maxLength": 64,
+      "description": "IBAN transfer için referans (örn: ANALIZ-{id})."
+    },
+    "bank_details": {
+      "type": "object",
+      "additionalProperties": false,
+      "description": "IBAN talimat ekranında gösterilecek şirket hesap bilgileri.",
+      "properties": {
+        "iban": {
+          "type": "string",
+          "minLength": 10,
+          "maxLength": 64
+        },
+        "account_holder": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 120
+        },
+        "instructions": {
+          "type": "string",
+          "minLength": 0,
+          "maxLength": 500
+        }
+      },
+      "required": [
+        "iban",
+        "account_holder"
+      ]
+    },
+    "gateway_provider": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 50,
+      "description": "IYZICO, PAYTR vb."
+    },
+    "gateway_transaction_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200
+    },
+    "gateway_payment_status": {
+      "type": "string",
+      "minLength": 0,
+      "maxLength": 50
+    },
+    "receipt_blob_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200,
+      "description": "Dekont dosyası için opak storage referansı (DB’de e-posta tutulmaz)."
+    },
+    "receipt_received_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "reviewed_by": {
+      "type": "string",
+      "format": "uuid",
+      "description": "Manuel inceleme yapan admin user id."
+    },
+    "reviewed_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "rejection_reason": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 500
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "updated_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "paid_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "expires_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "IBAN transfer için son ödeme/dec. gönderim süresi (örn 7 gün)."
+    },
+    "metadata": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "IP, user-agent vb. PII sızdırmamak şartıyla."
+    }
+  },
+  "required": [
+    "payment_intent_id",
+    "target_type",
+    "target_id",
+    "payer_user_id",
+    "payment_method",
+    "status",
+    "amount_total",
+    "currency",
+    "created_at",
+    "updated_at"
+  ],
+  "allOf": [
+    {
+      "if": {
+        "properties": {
+          "payment_method": {
+            "const": "IBAN_TRANSFER"
+          }
+        },
+        "required": [
+          "payment_method"
+        ]
+      },
+      "then": {
+        "required": [
+          "reference_code",
+          "expires_at",
+          "bank_details"
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "payment_method": {
+            "const": "CREDIT_CARD"
+          }
+        },
+        "required": [
+          "payment_method"
+        ]
+      },
+      "then": {
+        "required": [
+          "gateway_provider"
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "status": {
+            "const": "PAID"
+          }
+        },
+        "required": [
+          "status"
+        ]
+      },
+      "then": {
+        "required": [
+          "paid_at"
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "status": {
+            "const": "REJECTED"
+          }
+        },
+        "required": [
+          "status"
+        ]
+      },
+      "then": {
+        "required": [
+          "reviewed_by",
+          "reviewed_at",
+          "rejection_reason"
+        ]
+      }
+    }
+  ]
+}

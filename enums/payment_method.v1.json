@@ -1,0 +1,11 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://tarlaanaliz.com/enums/payment_method.v1.json",
+  "title": "PaymentMethod",
+  "type": "string",
+  "description": "Ödeme yöntemi: kredi kartı (gateway) veya IBAN havale/EFT (dekont + manuel onay).",
+  "enum": [
+    "CREDIT_CARD",
+    "IBAN_TRANSFER"
+  ]
+}

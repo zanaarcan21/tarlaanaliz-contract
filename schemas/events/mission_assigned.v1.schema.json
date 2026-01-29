@@ -1,0 +1,310 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://api.tarlaanaliz.com/schemas/events/mission_assigned.v1.schema.json",
+  "title": "MissionAssignedEvent",
+  "description": "Domain event: Mission assigned to pilot. Marks responsibility transfer and notification trigger.",
+  "type": "object",
+  "properties": {
+    "event_id": {
+      "$ref": "#/$defs/EventId",
+      "description": "Unique event identifier"
+    },
+    "event_type": {
+      "type": "string",
+      "const": "mission.assigned",
+      "description": "Event type (constant)"
+    },
+    "event_version": {
+      "type": "string",
+      "const": "1.0",
+      "description": "Event schema version"
+    },
+    "aggregate_type": {
+      "type": "string",
+      "const": "mission",
+      "description": "Aggregate type"
+    },
+    "aggregate_id": {
+      "type": "string",
+      "pattern": "^mission_[a-z0-9]{24}$",
+      "description": "Mission identifier (aggregate root)"
+    },
+    "occurred_at": {
+      "$ref": "#/$defs/Timestamp",
+      "description": "When the assignment occurred (ISO 8601 UTC)"
+    },
+    "actor": {
+      "$ref": "#/$defs/Actor",
+      "description": "Who performed the assignment (dispatcher, admin, or system)"
+    },
+    "data": {
+      "$ref": "#/$defs/MissionAssignedData",
+      "description": "Event-specific data"
+    },
+    "metadata": {
+      "$ref": "#/$defs/EventMetadata",
+      "description": "Event metadata (correlation, causation, etc.)"
+    }
+  },
+  "required": [
+    "event_id",
+    "event_type",
+    "event_version",
+    "aggregate_type",
+    "aggregate_id",
+    "occurred_at",
+    "actor",
+    "data"
+  ],
+  "unevaluatedProperties": false,
+  "$defs": {
+    "EventId": {
+      "type": "string",
+      "pattern": "^event_[a-z0-9]{24}$",
+      "description": "Event identifier format: event_{24-char-hex}"
+    },
+    "Actor": {
+      "type": "object",
+      "title": "Actor",
+      "description": "Who performed the assignment (PII-free)",
+      "properties": {
+        "actor_type": {
+          "type": "string",
+          "enum": ["USER", "SYSTEM", "SERVICE", "CRON"],
+          "description": "Actor type"
+        },
+        "actor_user_id": {
+          "type": "string",
+          "pattern": "^user_[a-z0-9]{24}$",
+          "description": "User ID (NOT PII - real identity in PII vault)"
+        },
+        "actor_role": {
+          "type": "string",
+          "description": "Actor's role at event time (reference: enums/role.enum.v1.json)"
+        }
+      },
+      "required": ["actor_type"],
+      "unevaluatedProperties": false
+    },
+    "MissionAssignedData": {
+      "type": "object",
+      "title": "Mission Assigned Data",
+      "description": "Data specific to mission assignment event",
+      "properties": {
+        "mission_id": {
+          "type": "string",
+          "pattern": "^mission_[a-z0-9]{24}$",
+          "description": "Mission identifier"
+        },
+        "field_id": {
+          "type": "string",
+          "pattern": "^field_[a-z0-9]{24}$",
+          "description": "Field identifier"
+        },
+        "assigned_to": {
+          "$ref": "#/$defs/AssignmentTarget",
+          "description": "Who is assigned (pilot)"
+        },
+        "assignment_method": {
+          "type": "string",
+          "enum": ["MANUAL", "AUTO_ROUTING", "SELF_ASSIGNED", "INVITATION_ACCEPTED"],
+          "description": "How the assignment was made"
+        },
+        "schedule": {
+          "$ref": "#/$defs/MissionSchedule",
+          "description": "Mission schedule/time window"
+        },
+        "priority": {
+          "type": "string",
+          "enum": ["LOW", "NORMAL", "HIGH", "URGENT"],
+          "description": "Mission priority"
+        },
+        "analysis_types": {
+          "type": "array",
+          "items": {
+            "type": "string",
+            "description": "Analysis type (reference: enums/analysis_type.enum.v1.json)"
+          },
+          "minItems": 1,
+          "description": "Requested analysis types (KR-002: 7 map layers)"
+        },
+        "previous_assignment": {
+          "$ref": "#/$defs/PreviousAssignment",
+          "description": "Previous assignment (if reassignment)"
+        }
+      },
+      "required": [
+        "mission_id",
+        "field_id",
+        "assigned_to",
+        "assignment_method",
+        "schedule",
+        "priority",
+        "analysis_types"
+      ],
+      "unevaluatedProperties": false
+    },
+    "AssignmentTarget": {
+      "type": "object",
+      "title": "Assignment Target",
+      "description": "Who the mission is assigned to (PII-free)",
+      "properties": {
+        "pilot_user_id": {
+          "type": "string",
+          "pattern": "^user_[a-z0-9]{24}$",
+          "description": "Pilot user ID (NOT PII)"
+        },
+        "pilot_role": {
+          "type": "string",
+          "const": "PILOT",
+          "description": "Pilot role (always PILOT)"
+        },
+        "assigned_at": {
+          "$ref": "#/$defs/Timestamp",
+          "description": "Assignment timestamp"
+        },
+        "expected_acceptance_by": {
+          "$ref": "#/$defs/Timestamp",
+          "description": "Deadline for pilot to accept assignment"
+        }
+      },
+      "required": ["pilot_user_id", "pilot_role", "assigned_at"],
+      "unevaluatedProperties": false
+    },
+    "MissionSchedule": {
+      "type": "object",
+      "title": "Mission Schedule",
+      "properties": {
+        "scheduled_date": {
+          "type": "string",
+          "format": "date",
+          "description": "Scheduled date (YYYY-MM-DD)"
+        },
+        "earliest_start": {
+          "$ref": "#/$defs/Timestamp",
+          "description": "Earliest start time"
+        },
+        "latest_start": {
+          "$ref": "#/$defs/Timestamp",
+          "description": "Latest start time"
+        },
+        "estimated_duration_minutes": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Estimated duration in minutes"
+        }
+      },
+      "required": ["scheduled_date"],
+      "unevaluatedProperties": false
+    },
+    "PreviousAssignment": {
+      "type": "object",
+      "title": "Previous Assignment",
+      "description": "Previous assignment details (if reassignment)",
+      "properties": {
+        "previous_pilot_user_id": {
+          "type": "string",
+          "pattern": "^user_[a-z0-9]{24}$",
+          "description": "Previous pilot user ID"
+        },
+        "unassigned_at": {
+          "$ref": "#/$defs/Timestamp",
+          "description": "When previous assignment was removed"
+        },
+        "unassignment_reason": {
+          "type": "string",
+          "enum": ["PILOT_DECLINED", "PILOT_UNAVAILABLE", "REASSIGNMENT_REQUESTED", "TIMEOUT", "OTHER"],
+          "description": "Why previous assignment was removed"
+        }
+      },
+      "required": ["previous_pilot_user_id", "unassigned_at", "unassignment_reason"],
+      "unevaluatedProperties": false
+    },
+    "EventMetadata": {
+      "type": "object",
+      "title": "Event Metadata",
+      "description": "Event correlation and tracing metadata",
+      "properties": {
+        "correlation_id": {
+          "type": "string",
+          "description": "Correlation ID for tracing related events"
+        },
+        "causation_id": {
+          "type": "string",
+          "description": "ID of event/command that caused this event"
+        },
+        "trace_id": {
+          "type": "string",
+          "description": "Distributed tracing ID"
+        },
+        "partition_key": {
+          "type": "string",
+          "description": "Event stream partition key (typically aggregate_id)"
+        },
+        "sequence_number": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Sequence number within aggregate"
+        },
+        "source_service": {
+          "type": "string",
+          "description": "Service that emitted the event"
+        }
+      },
+      "unevaluatedProperties": false
+    },
+    "Timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 timestamp (UTC)"
+    }
+  },
+  "examples": [
+    {
+      "event_id": "event_60a7f1b8c9d4e5f6a7b8c9e1",
+      "event_type": "mission.assigned",
+      "event_version": "1.0",
+      "aggregate_type": "mission",
+      "aggregate_id": "mission_60a7f1b8c9d4e5f6a7b8c9d0",
+      "occurred_at": "2026-06-14T15:00:00Z",
+      "actor": {
+        "actor_type": "USER",
+        "actor_user_id": "user_60a7f1b8c9d4e5f6a7b8c9d2",
+        "actor_role": "IL_OPERATOR"
+      },
+      "data": {
+        "mission_id": "mission_60a7f1b8c9d4e5f6a7b8c9d0",
+        "field_id": "field_507f1f77bcf86cd799439011",
+        "assigned_to": {
+          "pilot_user_id": "user_60a7f1b8c9d4e5f6a7b8c9d0",
+          "pilot_role": "PILOT",
+          "assigned_at": "2026-06-14T15:00:00Z",
+          "expected_acceptance_by": "2026-06-14T18:00:00Z"
+        },
+        "assignment_method": "MANUAL",
+        "schedule": {
+          "scheduled_date": "2026-06-15",
+          "earliest_start": "2026-06-15T06:00:00Z",
+          "latest_start": "2026-06-15T09:00:00Z",
+          "estimated_duration_minutes": 45
+        },
+        "priority": "NORMAL",
+        "analysis_types": ["HEALTH", "DISEASE", "PEST", "WATER_STRESS"]
+      },
+      "metadata": {
+        "correlation_id": "corr_mission_123",
+        "trace_id": "trace_xyz789",
+        "partition_key": "mission_60a7f1b8c9d4e5f6a7b8c9d0",
+        "sequence_number": 1,
+        "source_service": "mission-service"
+      }
+    }
+  ],
+  "notes": {
+    "pii_free": "pilot_user_id is NOT PII. Real pilot identity is in PII vault (user_pii.v1.schema.json).",
+    "notification_decoupling": "This event does NOT specify notification method (SMS, push, email). Notification service subscribes to this event and sends notifications based on user preferences (user.preferences.notification_channels).",
+    "responsibility_transfer": "Assignment marks responsibility transfer. Pilot is responsible from assigned_at until mission completion or reassignment.",
+    "acceptance_required": "Pilot must accept assignment (mission.accepted event) before starting flight.",
+    "kr_reference": "Mission assignment in KR-015 (Drone pilotları). Routing in KR-016."
+  }
+}

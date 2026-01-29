@@ -1,0 +1,409 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://api.tarlaanaliz.com/schemas/events/analysis_completed.v1.schema.json",
+  "title": "AnalysisCompletedEvent",
+  "description": "Domain event: AI analysis completed. Triggers result delivery to web app (one-way flow per KR-071).",
+  "type": "object",
+  "properties": {
+    "event_id": {
+      "$ref": "#/$defs/EventId",
+      "description": "Unique event identifier"
+    },
+    "event_type": {
+      "type": "string",
+      "const": "analysis.completed",
+      "description": "Event type (constant)"
+    },
+    "event_version": {
+      "type": "string",
+      "const": "1.0",
+      "description": "Event schema version"
+    },
+    "aggregate_type": {
+      "type": "string",
+      "const": "analysis_job",
+      "description": "Aggregate type"
+    },
+    "aggregate_id": {
+      "type": "string",
+      "pattern": "^job_[a-z0-9]{24}$",
+      "description": "Job identifier (aggregate root)"
+    },
+    "occurred_at": {
+      "$ref": "#/$defs/Timestamp",
+      "description": "When the analysis completed (ISO 8601 UTC)"
+    },
+    "actor": {
+      "$ref": "#/$defs/Actor",
+      "description": "System/service that completed the analysis"
+    },
+    "data": {
+      "$ref": "#/$defs/AnalysisCompletedData",
+      "description": "Event-specific data"
+    },
+    "metadata": {
+      "$ref": "#/$defs/EventMetadata",
+      "description": "Event metadata (correlation, causation, etc.)"
+    }
+  },
+  "required": [
+    "event_id",
+    "event_type",
+    "event_version",
+    "aggregate_type",
+    "aggregate_id",
+    "occurred_at",
+    "actor",
+    "data"
+  ],
+  "unevaluatedProperties": false,
+  "$defs": {
+    "EventId": {
+      "type": "string",
+      "pattern": "^event_[a-z0-9]{24}$",
+      "description": "Event identifier format: event_{24-char-hex}"
+    },
+    "Actor": {
+      "type": "object",
+      "title": "Actor",
+      "description": "System/service that completed the analysis",
+      "properties": {
+        "actor_type": {
+          "type": "string",
+          "enum": ["SYSTEM", "SERVICE"],
+          "description": "Actor type (always SYSTEM or SERVICE for AI analysis)"
+        },
+        "actor_service": {
+          "type": "string",
+          "description": "Service name (e.g., 'analysis-worker', 'ai-service')"
+        },
+        "worker_id": {
+          "type": "string",
+          "description": "Worker instance ID that processed the job"
+        }
+      },
+      "required": ["actor_type", "actor_service"],
+      "unevaluatedProperties": false
+    },
+    "AnalysisCompletedData": {
+      "type": "object",
+      "title": "Analysis Completed Data",
+      "description": "Data specific to analysis completion event",
+      "properties": {
+        "job_id": {
+          "type": "string",
+          "pattern": "^job_[a-z0-9]{24}$",
+          "description": "Job identifier"
+        },
+        "result_id": {
+          "type": "string",
+          "pattern": "^result_[a-z0-9]{24}$",
+          "description": "Result identifier"
+        },
+        "mission_id": {
+          "type": "string",
+          "pattern": "^mission_[a-z0-9]{24}$",
+          "description": "Associated mission identifier"
+        },
+        "field_id": {
+          "type": "string",
+          "pattern": "^field_[a-z0-9]{24}$",
+          "description": "Associated field identifier"
+        },
+        "status": {
+          "type": "string",
+          "enum": ["SUCCESS", "PARTIAL_SUCCESS", "FAILED"],
+          "description": "Analysis completion status"
+        },
+        "analysis_type": {
+          "type": "string",
+          "description": "Analysis type (reference: enums/analysis_type.enum.v1.json - KR-002: 7 map layers)"
+        },
+        "crop_type": {
+          "type": "string",
+          "description": "Crop type (reference: enums/crop_type.enum.v1.json - 8 GAP crops)"
+        },
+        "summary": {
+          "$ref": "#/$defs/ResultSummary",
+          "description": "High-level summary of results"
+        },
+        "layers": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/LayerReference"
+          },
+          "description": "Output layer references (map layers per KR-002)"
+        },
+        "processing_time": {
+          "$ref": "#/$defs/ProcessingTime",
+          "description": "Processing time statistics"
+        },
+        "model_info": {
+          "$ref": "#/$defs/ModelInfo",
+          "description": "Model fingerprint and version"
+        },
+        "error": {
+          "$ref": "#/$defs/AnalysisError",
+          "description": "Error information (if status = FAILED)"
+        }
+      },
+      "required": [
+        "job_id",
+        "result_id",
+        "mission_id",
+        "field_id",
+        "status",
+        "analysis_type",
+        "crop_type",
+        "processing_time",
+        "model_info"
+      ],
+      "unevaluatedProperties": false
+    },
+    "ResultSummary": {
+      "type": "object",
+      "title": "Result Summary",
+      "properties": {
+        "overall_health": {
+          "type": "string",
+          "enum": ["EXCELLENT", "GOOD", "FAIR", "POOR", "CRITICAL"],
+          "description": "Overall field health"
+        },
+        "health_score": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100,
+          "description": "Numeric health score (0-100)"
+        },
+        "area_analyzed_hectares": {
+          "type": "number",
+          "minimum": 0,
+          "description": "Area successfully analyzed"
+        },
+        "issues_detected": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Number of issues detected"
+        }
+      },
+      "unevaluatedProperties": false
+    },
+    "LayerReference": {
+      "type": "object",
+      "title": "Layer Reference",
+      "description": "Reference to output layer (map layer per KR-002)",
+      "properties": {
+        "layer_id": {
+          "type": "string",
+          "pattern": "^layer_[a-z0-9]{24}$",
+          "description": "Layer identifier"
+        },
+        "name": {
+          "type": "string",
+          "description": "Layer name (e.g., 'Health Map', 'Disease Map')"
+        },
+        "type": {
+          "type": "string",
+          "enum": ["RASTER", "VECTOR", "HEATMAP", "CLASSIFICATION", "DETECTION"],
+          "description": "Layer type"
+        },
+        "uri": {
+          "type": "string",
+          "format": "uri",
+          "description": "URI to layer file"
+        },
+        "format": {
+          "type": "string",
+          "enum": ["GEOTIFF", "PNG", "GEOJSON", "SHAPEFILE"],
+          "description": "Layer format"
+        },
+        "sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$",
+          "description": "Layer file hash"
+        },
+        "style_ref": {
+          "type": "string",
+          "description": "Reference to layer style in layer_registry"
+        }
+      },
+      "required": ["layer_id", "name", "type", "uri", "format", "sha256"],
+      "unevaluatedProperties": false
+    },
+    "ProcessingTime": {
+      "type": "object",
+      "title": "Processing Time",
+      "properties": {
+        "started_at": {
+          "$ref": "#/$defs/Timestamp",
+          "description": "Job start time"
+        },
+        "completed_at": {
+          "$ref": "#/$defs/Timestamp",
+          "description": "Job completion time"
+        },
+        "duration_seconds": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Total processing duration in seconds"
+        },
+        "inference_time_seconds": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "AI inference time in seconds"
+        }
+      },
+      "required": ["started_at", "completed_at", "duration_seconds"],
+      "unevaluatedProperties": false
+    },
+    "ModelInfo": {
+      "type": "object",
+      "title": "Model Information",
+      "description": "Model fingerprint for reproducibility",
+      "properties": {
+        "model_name": {
+          "type": "string",
+          "description": "Model name"
+        },
+        "model_version": {
+          "type": "string",
+          "description": "Model version"
+        },
+        "model_fingerprint": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$",
+          "description": "Model weights SHA-256 hash"
+        }
+      },
+      "required": ["model_name", "model_version", "model_fingerprint"],
+      "unevaluatedProperties": false
+    },
+    "AnalysisError": {
+      "type": "object",
+      "title": "Analysis Error",
+      "properties": {
+        "error_code": {
+          "type": "string",
+          "description": "Error code"
+        },
+        "error_message": {
+          "type": "string",
+          "maxLength": 500,
+          "description": "Error message"
+        },
+        "retryable": {
+          "type": "boolean",
+          "description": "Whether error is retryable"
+        }
+      },
+      "required": ["error_code", "error_message", "retryable"],
+      "unevaluatedProperties": false
+    },
+    "EventMetadata": {
+      "type": "object",
+      "title": "Event Metadata",
+      "description": "Event correlation and tracing metadata",
+      "properties": {
+        "correlation_id": {
+          "type": "string",
+          "description": "Correlation ID for tracing related events"
+        },
+        "causation_id": {
+          "type": "string",
+          "description": "ID of event/command that caused this event"
+        },
+        "trace_id": {
+          "type": "string",
+          "description": "Distributed tracing ID"
+        },
+        "partition_key": {
+          "type": "string",
+          "description": "Event stream partition key (typically aggregate_id)"
+        },
+        "sequence_number": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Sequence number within aggregate"
+        },
+        "source_service": {
+          "type": "string",
+          "description": "Service that emitted the event"
+        }
+      },
+      "unevaluatedProperties": false
+    },
+    "Timestamp": {
+      "type": "string",
+      "format": "date-time",
+      "description": "ISO 8601 timestamp (UTC)"
+    }
+  },
+  "examples": [
+    {
+      "event_id": "event_60a7f1b8c9d4e5f6a7b8c9e2",
+      "event_type": "analysis.completed",
+      "event_version": "1.0",
+      "aggregate_type": "analysis_job",
+      "aggregate_id": "job_60a7f1b8c9d4e5f6a7b8c9d2",
+      "occurred_at": "2026-06-15T09:45:30Z",
+      "actor": {
+        "actor_type": "SERVICE",
+        "actor_service": "analysis-worker",
+        "worker_id": "worker-gpu-03-us-east-1"
+      },
+      "data": {
+        "job_id": "job_60a7f1b8c9d4e5f6a7b8c9d2",
+        "result_id": "result_60a7f1b8c9d4e5f6a7b8c9d3",
+        "mission_id": "mission_60a7f1b8c9d4e5f6a7b8c9d0",
+        "field_id": "field_507f1f77bcf86cd799439011",
+        "status": "SUCCESS",
+        "analysis_type": "HEALTH",
+        "crop_type": "COTTON",
+        "summary": {
+          "overall_health": "GOOD",
+          "health_score": 78.5,
+          "area_analyzed_hectares": 10.15,
+          "issues_detected": 3
+        },
+        "layers": [
+          {
+            "layer_id": "layer_60a7f1b8c9d4e5f6a7b8c9d4",
+            "name": "Health Map (Sağlık Haritası)",
+            "type": "RASTER",
+            "uri": "s3://tarlaanaliz-results/2026/06/field_507f1f77bcf86cd799439011/health.tif",
+            "format": "GEOTIFF",
+            "sha256": "e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7",
+            "style_ref": "health_green_v1"
+          }
+        ],
+        "processing_time": {
+          "started_at": "2026-06-15T08:10:00Z",
+          "completed_at": "2026-06-15T09:45:30Z",
+          "duration_seconds": 5730,
+          "inference_time_seconds": 3245
+        },
+        "model_info": {
+          "model_name": "cotton-health-v2",
+          "model_version": "2.3.1",
+          "model_fingerprint": "b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c0"
+        }
+      },
+      "metadata": {
+        "correlation_id": "corr_mission_123",
+        "causation_id": "event_job_started",
+        "trace_id": "trace_xyz789",
+        "partition_key": "job_60a7f1b8c9d4e5f6a7b8c9d2",
+        "sequence_number": 2,
+        "source_service": "analysis-worker"
+      }
+    }
+  ],
+  "notes": {
+    "one_way_flow": "This event triggers result delivery to web app (PWA). Per KR-071: one-way data flow. Web app does NOT send requests back to AI worker.",
+    "pii_free": "No PII in this event. All references are IDs.",
+    "map_layers_only": "Results are MAP LAYERS only (per KR-002). No prescriptions, no action recommendations.",
+    "result_delivery": "Web app subscribes to this event and pulls result details from Results API. No inbound requests to AI worker.",
+    "immutability": "Events are immutable. Analysis results are final.",
+    "kr_reference": "Analysis completion in KR-017 (Analysis). One-way flow in KR-071. Map layers in KR-002."
+  }
+}

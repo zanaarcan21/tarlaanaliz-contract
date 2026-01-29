@@ -1,0 +1,14 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://tarlaanaliz.com/enums/payment_status.v1.json",
+  "title": "PaymentStatusV1",
+  "type": "string",
+  "description": "Ödeme durumları v1.",
+  "enum": [
+    "PAYMENT_PENDING",
+    "PAID",
+    "REJECTED",
+    "EXPIRED",
+    "CANCELLED"
+  ]
+}

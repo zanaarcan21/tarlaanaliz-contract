@@ -1,0 +1,157 @@
+{
+  "id": "result_60a7f1b8c9d4e5f6a7b8c9d3",
+  "job_id": "job_60a7f1b8c9d4e5f6a7b8c9d2",
+  "field_id": "field_507f1f77bcf86cd799439011",
+  "mission_id": "mission_60a7f1b8c9d4e5f6a7b8c9d0",
+  "status": "SUCCESS",
+  "analysis_type": "HEALTH",
+  "summary": {
+    "overall_health": "GOOD",
+    "health_score": 78.5,
+    "area_analyzed_hectares": 10.15,
+    "coverage_percent": 99.5,
+    "issues_detected": 3,
+    "critical_issues": 0,
+    "description": "Tarla genelinde iyi sağlık durumu. Güneybatı köşede hafif su stresi tespit edildi. Kuzeydoğu sınırda küçük bir hastalık odağı mevcut."
+  },
+  "layers": [
+    {
+      "layer_id": "layer_60a7f1b8c9d4e5f6a7b8c9d4",
+      "name": "Health Map (Sağlık Haritası)",
+      "type": "RASTER",
+      "uri": "s3://tarlaanaliz-results/2026/06/field_507f1f77bcf86cd799439011/health.tif",
+      "format": "GEOTIFF",
+      "sha256": "e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7",
+      "size_bytes": 15728640,
+      "style_ref": "health_green_v1",
+      "bounds": [40.2181, 37.9158, 40.2190, 37.9168],
+      "preview_uri": "s3://tarlaanaliz-results/2026/06/field_507f1f77bcf86cd799439011/health_preview.png"
+    },
+    {
+      "layer_id": "layer_60a7f1b8c9d4e5f6a7b8c9d5",
+      "name": "Disease Map (Hastalık Haritası)",
+      "type": "CLASSIFICATION",
+      "uri": "s3://tarlaanaliz-results/2026/06/field_507f1f77bcf86cd799439011/disease.geojson",
+      "format": "GEOJSON",
+      "sha256": "f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8",
+      "size_bytes": 8432,
+      "style_ref": "disease_orange_v1",
+      "bounds": [40.2181, 37.9158, 40.2190, 37.9168]
+    },
+    {
+      "layer_id": "layer_60a7f1b8c9d4e5f6a7b8c9d6",
+      "name": "Pest Map (Zararlı Böcek Haritası)",
+      "type": "DETECTION",
+      "uri": "s3://tarlaanaliz-results/2026/06/field_507f1f77bcf86cd799439011/pest.geojson",
+      "format": "GEOJSON",
+      "sha256": "a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9",
+      "size_bytes": 2156,
+      "style_ref": "pest_red_v1",
+      "bounds": [40.2188, 37.9166, 40.2190, 37.9168]
+    }
+  ],
+  "metrics": {
+    "health_distribution": {
+      "excellent_percent": 15.2,
+      "good_percent": 62.8,
+      "fair_percent": 18.5,
+      "poor_percent": 3.2,
+      "critical_percent": 0.3
+    },
+    "stress_indicators": {
+      "water_stress_area_hectares": 0.85,
+      "nitrogen_stress_area_hectares": 0.15
+    },
+    "custom_metrics": {
+      "total_detected_issues": 3,
+      "disease_area_hectares": 0.15,
+      "pest_area_hectares": 0.08
+    }
+  },
+  "detections": [
+    {
+      "detection_id": "det_001",
+      "type": "DISEASE",
+      "class": "cotton_bacterial_blight",
+      "confidence": 0.82,
+      "severity": "MEDIUM",
+      "area_hectares": 0.15,
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [40.2188, 37.9166],
+            [40.2190, 37.9166],
+            [40.2190, 37.9168],
+            [40.2188, 37.9168],
+            [40.2188, 37.9166]
+          ]
+        ]
+      },
+      "description": "Bakteriyel yanıklık belirtileri. Orta şiddetli enfeksiyon. Yapraklarda açık sarı-kahverengi lekeler."
+    },
+    {
+      "detection_id": "det_002",
+      "type": "PEST",
+      "class": "cotton_bollworm_damage",
+      "confidence": 0.67,
+      "severity": "LOW",
+      "area_hectares": 0.08,
+      "description": "Pamuk kurtçuğu hasarı. Düşük yoğunluk. Birkaç yaprakta besleme izi."
+    }
+  ],
+  "recommendations": [
+    {
+      "recommendation_id": "rec_001",
+      "priority": "HIGH",
+      "category": "DISEASE_MANAGEMENT",
+      "title": "Bakteriyel Yanıklık İçin Bakırlı İlaç Uygulaması",
+      "description": "Kuzeydoğu bölümde tespit edilen bakteriyel yanıklık odağına karşı bakırlı fungisit uygulaması önerilir. Uygulama sabah erken saatlerde, yapraklar kuru iken yapılmalıdır. 7-10 gün arayla 2 uygulama yapılması önerilir.",
+      "affected_area_hectares": 0.15,
+      "estimated_cost": {
+        "amount": 450,
+        "currency": "TRY",
+        "tax_included": false
+      }
+    },
+    {
+      "recommendation_id": "rec_002",
+      "priority": "MEDIUM",
+      "category": "IRRIGATION",
+      "title": "Güneybatı Bölgede Sulama Artırımı",
+      "description": "Güneybatı köşede hafif su stresi tespit edildi. Bu bölgede sulama miktarı %15-20 artırılmalıdır. Damla sulama sisteminin bu bölgedeki nozulları kontrol edilmelidir.",
+      "affected_area_hectares": 0.85
+    },
+    {
+      "recommendation_id": "rec_003",
+      "priority": "LOW",
+      "category": "PEST_CONTROL",
+      "title": "Pamuk Kurtçuğu İzleme",
+      "description": "Düşük yoğunlukta pamuk kurtçuğu hasarı tespit edildi. Şu an için ilaçlama gerekmemektedir ancak haftalık izleme yapılması önerilir. Ekonomik zarar eşiği (5 larva/100 bitki) aşılırsa müdahale edilmelidir.",
+      "affected_area_hectares": 0.08
+    }
+  ],
+  "model_info": {
+    "model_name": "cotton-health-v2",
+    "model_version": "2.3.1",
+    "model_fingerprint": "b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c0",
+    "framework": "PyTorch",
+    "framework_version": "2.0.1",
+    "trained_on": "cotton-dataset-2025-v3",
+    "training_date": "2025-12-15"
+  },
+  "quality": {
+    "image_quality_score": 92.5,
+    "cloud_cover_percent": 2.1,
+    "shadow_percent": 8.3,
+    "blur_score": 5.2,
+    "overall_quality": "EXCELLENT"
+  },
+  "created_at": "2026-06-15T09:45:30Z",
+  "metadata": {
+    "processing_time_seconds": 3245,
+    "images_analyzed": 487,
+    "worker_id": "worker-gpu-03-us-east-1",
+    "gpu_hours": 0.9
+  }
+}
