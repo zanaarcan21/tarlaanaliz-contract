@@ -1,5 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://api.tarlaanaliz.com/schemas/platform/calibrated_dataset_manifest.v1.schema.json",
   "title": "CalibratedDatasetManifest v1",
   "description": "Producer sonrası oluşturulan kalibre veri paketinin manifesti: çıktı dosyaları, raporlar ve hash'ler.",
   "type": "object",

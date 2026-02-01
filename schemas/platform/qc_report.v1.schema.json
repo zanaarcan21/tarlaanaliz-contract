@@ -1,5 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://api.tarlaanaliz.com/schemas/platform/qc_report.v1.schema.json",
   "title": "QCReport v1",
   "description": "Kalite kontrol raporu: PASS/WARN/FAIL + flags + önerilen aksiyon.",
   "type": "object",

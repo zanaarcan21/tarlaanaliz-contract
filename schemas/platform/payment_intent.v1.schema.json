@@ -3,7 +3,7 @@
   "$id": "https://tarlaanaliz.com/schemas/platform/payment_intent.v1.schema.json",
   "title": "PaymentIntentV1",
   "type": "object",
-  "additionalProperties": false,
+  "unevaluatedProperties": false,
   "description": "PaymentIntent: mission/subscription için ödeme talebi. Kredi kartı otomatik, IBAN dekont manuel onay.",
   "properties": {
     "payment_intent_id": {
@@ -52,7 +52,7 @@
     },
     "bank_details": {
       "type": "object",
-      "additionalProperties": false,
+      "unevaluatedProperties": false,
       "description": "IBAN talimat ekranında gösterilecek şirket hesap bilgileri.",
       "properties": {
         "iban": {

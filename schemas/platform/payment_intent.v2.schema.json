@@ -3,7 +3,7 @@
   "$id": "https://tarlaanaliz.com/schemas/platform/payment_intent.v2.schema.json",
   "title": "PaymentIntentV2",
   "type": "object",
-  "additionalProperties": false,
+  "unevaluatedProperties": false,
   "description": "PaymentIntent v2: v1 + CANCELLED/REFUNDED alanları ve amount_kurus standardı.",
   "properties": {
     "payment_intent_id": {
@@ -47,7 +47,7 @@
     },
     "bank_details": {
       "type": "object",
-      "additionalProperties": false,
+      "unevaluatedProperties": false,
       "description": "IBAN talimat ekranında gösterilecek şirket hesap bilgileri.",
       "properties": {
         "iban": {

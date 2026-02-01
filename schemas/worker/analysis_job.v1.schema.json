@@ -43,6 +43,19 @@
       "type": "string",
       "description": "Crop type (reference: enums/crop_type.enum.v1.json)"
     },
+    "requires_calibrated": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether this job requires calibrated (reflectance-corrected) input data"
+    },
+    "calibration_result_ref": {
+      "type": "string",
+      "description": "Reference to calibration result (platform/calibration_result.v1). Required if requires_calibrated=true"
+    },
+    "qc_report_ref": {
+      "type": "string",
+      "description": "Reference to QC report (platform/qc_report.v1). Used for pre-analysis quality validation"
+    },
     "inputs": {
       "type": "array",
       "items": {

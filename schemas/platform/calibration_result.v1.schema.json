@@ -1,5 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://api.tarlaanaliz.com/schemas/platform/calibration_result.v1.schema.json",
   "title": "CalibrationResult v1",
   "description": "Kalibrasyon çıktısı özeti: yöntem, panel kullanımı, parametreler, doğrulama metrikleri.",
   "type": "object",
