@@ -1,0 +1,106 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "CalibratedDatasetManifest v1",
+  "description": "Producer sonrası oluşturulan kalibre veri paketinin manifesti: çıktı dosyaları, raporlar ve hash'ler.",
+  "type": "object",
+  "required": [
+    "batch_id",
+    "mission_id",
+    "field_id",
+    "producer_tool",
+    "reflectance_scale",
+    "outputs",
+    "reports",
+    "created_at"
+  ],
+  "properties": {
+    "batch_id": {
+      "$ref": "#/$defs/id"
+    },
+    "mission_id": {
+      "$ref": "#/$defs/id"
+    },
+    "field_id": {
+      "$ref": "#/$defs/id"
+    },
+    "producer_tool": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Kalibrasyon/üretim aracı (ör. DJI Terra, Pix4Dfields)."
+    },
+    "reflectance_scale": {
+      "type": "string",
+      "enum": [
+        "reflectance_0_1",
+        "reflectance_0_100",
+        "scaled_int",
+        "unknown"
+      ],
+      "description": "Yansıma ölçeği (reflectance scale): çıktının sayısal ölçeği."
+    },
+    "outputs": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/file_artifact"
+      },
+      "description": "Kalibre edilmiş çıktı dosyaları (örn. bantlar, ortomozaik, indeksler)."
+    },
+    "reports": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "$ref": "#/$defs/file_artifact"
+      },
+      "description": "Kalibrasyon/QC raporları ve üretim logları."
+    },
+    "created_at": {
+      "$ref": "#/$defs/created_at"
+    }
+  },
+  "unevaluatedProperties": false,
+  "$defs": {
+    "id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Opaque identifier (UUID/ULID/etc. allowed)."
+    },
+    "uri": {
+      "type": "string",
+      "minLength": 1,
+      "description": "URI or path reference (e.g., s3://..., file://..., https://...)."
+    },
+    "sha256": {
+      "type": "string",
+      "pattern": "^[A-Fa-f0-9]{64}$",
+      "description": "SHA-256 hex digest of the referenced content."
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "RFC3339 timestamp."
+    },
+    "file_artifact": {
+      "type": "object",
+      "required": [
+        "uri",
+        "sha256",
+        "type"
+      ],
+      "properties": {
+        "uri": {
+          "$ref": "#/$defs/uri"
+        },
+        "sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "type": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Artifact type tag (consumer-defined)."
+        }
+      },
+      "unevaluatedProperties": false
+    }
+  }
+}

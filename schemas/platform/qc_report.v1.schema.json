@@ -1,0 +1,103 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "QCReport v1",
+  "description": "Kalite kontrol raporu: PASS/WARN/FAIL + flags + önerilen aksiyon.",
+  "type": "object",
+  "required": [
+    "qc_id",
+    "status",
+    "flags",
+    "created_at"
+  ],
+  "properties": {
+    "qc_id": {
+      "$ref": "#/$defs/id"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "PASS",
+        "WARN",
+        "FAIL"
+      ],
+      "description": "QC sonucu."
+    },
+    "flags": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1
+      },
+      "description": "Tespit edilen bayraklar (flags): örn. SATURATION_HIGH, BLURRY, SCALE_AMBIGUOUS."
+    },
+    "saturation_pct": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 100,
+      "description": "Doygunluk oranı (saturation %) — varsa."
+    },
+    "scale_ambiguous": {
+      "type": "boolean",
+      "description": "Ölçek belirsiz mi? (scale ambiguous)"
+    },
+    "recommended_action": {
+      "type": "string",
+      "enum": [
+        "PROCEED",
+        "RECALIBRATE",
+        "MANUAL_REVIEW",
+        "RETAKE_FLIGHT",
+        "QUARANTINE"
+      ],
+      "description": "Önerilen aksiyon."
+    },
+    "created_at": {
+      "$ref": "#/$defs/created_at"
+    }
+  },
+  "unevaluatedProperties": false,
+  "$defs": {
+    "id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Opaque identifier (UUID/ULID/etc. allowed)."
+    },
+    "uri": {
+      "type": "string",
+      "minLength": 1,
+      "description": "URI or path reference (e.g., s3://..., file://..., https://...)."
+    },
+    "sha256": {
+      "type": "string",
+      "pattern": "^[A-Fa-f0-9]{64}$",
+      "description": "SHA-256 hex digest of the referenced content."
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "RFC3339 timestamp."
+    },
+    "file_artifact": {
+      "type": "object",
+      "required": [
+        "uri",
+        "sha256",
+        "type"
+      ],
+      "properties": {
+        "uri": {
+          "$ref": "#/$defs/uri"
+        },
+        "sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "type": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Artifact type tag (consumer-defined)."
+        }
+      },
+      "unevaluatedProperties": false
+    }
+  }
+}

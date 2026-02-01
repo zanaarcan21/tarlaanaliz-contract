@@ -1,0 +1,139 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "CalibrationResult v1",
+  "description": "Kalibrasyon çıktısı özeti: yöntem, panel kullanımı, parametreler, doğrulama metrikleri.",
+  "type": "object",
+  "required": [
+    "calibration_id",
+    "producer_tool",
+    "method",
+    "panel_used",
+    "scale",
+    "created_at"
+  ],
+  "properties": {
+    "calibration_id": {
+      "$ref": "#/$defs/id"
+    },
+    "producer_tool": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Kalibrasyon/üretim aracı."
+    },
+    "method": {
+      "type": "string",
+      "enum": [
+        "factory",
+        "panel",
+        "irradiance",
+        "mixed",
+        "unknown"
+      ],
+      "description": "Kalibrasyon yöntemi (method)."
+    },
+    "panel_used": {
+      "type": "boolean",
+      "description": "Yansıma paneli kullanıldı mı?"
+    },
+    "irradiance_info": {
+      "type": "object",
+      "description": "Işınım bilgisi (irradiance): sensör/ölçüm varsa özet.",
+      "properties": {
+        "source": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Ölçüm kaynağı (ör. DLS, güneş sensörü)."
+        },
+        "notes": {
+          "type": "string"
+        }
+      },
+      "unevaluatedProperties": false
+    },
+    "scale": {
+      "type": "object",
+      "required": [
+        "reflectance_scale"
+      ],
+      "properties": {
+        "reflectance_scale": {
+          "type": "string",
+          "enum": [
+            "reflectance_0_1",
+            "reflectance_0_100",
+            "scaled_int",
+            "unknown"
+          ]
+        },
+        "scale_factor": {
+          "type": "number",
+          "description": "scaled_int gibi durumlarda ölçek faktörü (örn. 10000)."
+        }
+      },
+      "unevaluatedProperties": false
+    },
+    "validation_metrics": {
+      "type": "object",
+      "description": "Doğrulama metrikleri (validation metrics): opsiyonel.",
+      "additionalProperties": {
+        "type": [
+          "number",
+          "string",
+          "boolean",
+          "null"
+        ]
+      }
+    },
+    "notes": {
+      "type": "string"
+    },
+    "created_at": {
+      "$ref": "#/$defs/created_at"
+    }
+  },
+  "unevaluatedProperties": false,
+  "$defs": {
+    "id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Opaque identifier (UUID/ULID/etc. allowed)."
+    },
+    "uri": {
+      "type": "string",
+      "minLength": 1,
+      "description": "URI or path reference (e.g., s3://..., file://..., https://...)."
+    },
+    "sha256": {
+      "type": "string",
+      "pattern": "^[A-Fa-f0-9]{64}$",
+      "description": "SHA-256 hex digest of the referenced content."
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "RFC3339 timestamp."
+    },
+    "file_artifact": {
+      "type": "object",
+      "required": [
+        "uri",
+        "sha256",
+        "type"
+      ],
+      "properties": {
+        "uri": {
+          "$ref": "#/$defs/uri"
+        },
+        "sha256": {
+          "$ref": "#/$defs/sha256"
+        },
+        "type": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Artifact type tag (consumer-defined)."
+        }
+      },
+      "unevaluatedProperties": false
+    }
+  }
+}
