@@ -15,6 +15,7 @@
       "$ref": "#/$defs/Geometry"
     }
   ],
+  "unevaluatedProperties": false,
   "$defs": {
     "Feature": {
       "type": "object",
