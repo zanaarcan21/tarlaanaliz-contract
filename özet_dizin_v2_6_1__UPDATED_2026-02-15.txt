@@ -1,0 +1,107 @@
+tarlaanaliz-contracts/
+├─ .github/
+│  └─ workflows/
+│     ├─ auto_sync.yml
+│     └─ contract_validation.yml
+├─ ssot/
+│  ├─ README.md
+│  │  # (Amaç: Bu repo için SSOT haritası; kr_registry + contracts_ssot nasıl okunur?)
+│  ├─ kr_registry.md
+│  │  # (Amaç: KR kodlarının kanonik kaynağı; bileşen SSOT dosyaları buradan türetilir)
+│  └─ contracts_ssot.md
+│     # (Amaç: Contracts bileşeni için filtered view + uygulama notları; KR üretmez)
+│
+├─ api/
+│  ├─ components/
+│  │  ├─ parameters.yaml
+│  │  ├─ responses.yaml
+│  │  ├─ schemas.yaml
+│  │  └─ security_schemes.yaml
+│  ├─ edge_local.v1.yaml
+│  ├─ platform_internal.v1.yaml
+│  └─ platform_public.v1.yaml
+├─ docs/
+│  ├─ canonical/
+│  │  ├─ GELISTIRICI_UYGULAMA_PAKETI_v2_4_.docx
+│  │  ├─ KANONIK_URUN_ISLEYIS_REHBERI_v2_4_.docx
+│  │  ├─ README.md
+│  │  └─ SAHA_OPERASYON_SOP_v2_4_.docx
+│  ├─ checklists/
+│  │  ├─ CI_GATE_CHECKLIST.md
+│  │  ├─ PR_GATE_CHECKLIST.md
+│  │  └─ RELEASE_GATE_CHECKLIST.md
+│  ├─ examples/
+│  │  ├─ analysis_job.example.json
+│  │  ├─ analysis_result.example.json
+│  │  ├─ field.example.json
+│  │  ├─ intake_manifest.example.json
+│  │  ├─ mission.example.json
+│  │  └─ README.md
+│  ├─ migration_guides/
+│  │  ├─ field_v1_to_v2.md
+│  │  ├─ MIGRATION_GUIDE_TEMPLATE.md
+│  │  └─ README.md
+│  ├─ README.md
+│  └─ versioning_policy.md
+├─ enums/
+│  ├─ analysis_type.enum.v1.json
+│  ├─ crop_type.enum.v1.json
+│  ├─ mission_status.enum.v1.json
+│  ├─ payment_method.v1.json 
+│  ├─ payment_status.v1.json 
+│  ├─ payment_status.v2.json 
+│  ├─ payment_target_type.v1.json 
+│  ├─ quarantine_decision.enum.v1.json
+│  ├─ role.enum.v1.json
+│  └─ threat_type.enum.v1.json
+├─ generated/
+│  ├─ python/
+│  │  ├─ __init__.py
+│  │  └─ field.py
+│  └─ typescript/
+│     ├─ field.d.ts
+│     └─ index.d.ts
+├─ schemas/
+│  ├─ core/
+│  │  ├─ field.v1.schema.json
+│  │  ├─ mission.v1.schema.json
+│  │  ├─ user.v1.schema.json
+│  │  └─ user_pii.v1.schema.json
+│  ├─ edge/
+│  │  ├─ edge_metadata.v1.schema.json
+│  │  ├─ intake_manifest.v1.schema.json
+│  │  └─ quarantine_event.v1.schema.json
+│  ├─ events/
+│  │  ├─ analysis_completed.v1.schema.json
+│  │  ├─ field_created.v1.schema.json
+│  │  └─ mission_assigned.v1.schema.json
+│  ├─ platform/
+│  │  ├─ layer_registry.v1.schema.json
+│  │  ├─ payroll.v1.schema.json
+│  │  ├─ payment_intent.v1.schema.json
+│  │  ├─ payment_intent.v2.schema.json 
+│  │  └─ pricing.v1.schema.json
+│  ├─ shared/
+│  │  ├─ address.v1.schema.json
+│  │  ├─ geojson.v1.schema.json
+│  │  └─ money.v1.schema.json
+│  └─ worker/
+│     ├─ analysis_job.v1.schema.json
+│     └─ analysis_result.v1.schema.json
+├─ tests/
+│  ├─ test_examples_match_schemas.py
+│  ├─ test_no_breaking_changes.py
+│  └─ test_validate_all_schemas.py
+├─ tools/
+│  ├─ breaking_change_detector.py
+│  ├─ generate_types.sh
+│  ├─ pin_version.py
+│  ├─ sync_to_repos.sh
+│  └─ validate.py
+├─ .gitignore
+├─ CHANGELOG.md
+├─ CONTRACTS_VERSION.md
+├─ LICENSE
+├─ package.json
+├─ pyproject.toml
+└─ README.md
