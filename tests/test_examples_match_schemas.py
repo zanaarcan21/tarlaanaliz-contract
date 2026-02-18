@@ -13,7 +13,7 @@ from pathlib import Path
 from typing import Dict, Any
 
 try:
-    from jsonschema import Draft202012Validator, ValidationError  # type: ignore[import-untyped]
+    from jsonschema import Draft202012Validator, ValidationError, RefResolver  # type: ignore[import-untyped]
 except ImportError:
     pytest.skip("jsonschema not installed", allow_module_level=True)
 
@@ -43,8 +43,30 @@ class TestExamplesValidation:
         'intake_manifest.example.json': 'edge/intake_manifest.v1.schema.json',
         'analysis_job.example.json': 'worker/analysis_job.v1.schema.json',
         'analysis_result.example.json': 'worker/analysis_result.v1.schema.json',
+        'payment_intent.example.json': 'platform/payment_intent.v2.schema.json',
     }
     
+    def build_ref_store(self, base_dir: Path) -> Dict[str, Any]:
+        """Build local $ref store to avoid network resolution."""
+        store: Dict[str, Any] = {}
+        for path in (base_dir / "schemas").rglob("*.json"):
+            with open(path, 'r', encoding='utf-8') as f:
+                doc = json.load(f)
+            store[path.resolve().as_uri()] = doc
+            doc_id = doc.get('$id')
+            if isinstance(doc_id, str) and doc_id:
+                store[doc_id] = doc
+
+        for path in (base_dir / "enums").rglob("*.json"):
+            with open(path, 'r', encoding='utf-8') as f:
+                doc = json.load(f)
+            store[path.resolve().as_uri()] = doc
+            doc_id = doc.get('$id')
+            if isinstance(doc_id, str) and doc_id:
+                store[doc_id] = doc
+
+        return store
+
     def load_schema(self, schema_path: Path) -> Dict[str, Any]:
         """Load and return schema"""
         with open(schema_path, 'r', encoding='utf-8') as f:
@@ -86,8 +108,10 @@ class TestExamplesValidation:
         schema = self.load_schema(schema_file)
         
         # Validate
-        validator = Draft202012Validator(schema)
-        
+        ref_store = self.build_ref_store(base_dir=schemas_dir.parent)
+        resolver = RefResolver(base_uri=schema_file.resolve().as_uri(), referrer=schema, store=ref_store)
+        validator = Draft202012Validator(schema, resolver=resolver)
+
         errors = list(validator.iter_errors(example))
         
         if errors:

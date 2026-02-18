@@ -24,6 +24,7 @@ These examples serve multiple purposes:
 | `intake_manifest.example.json` | `edge/intake_manifest.v1.schema.json` | Edge intake batch |
 | `analysis_job.example.json` | `worker/analysis_job.v1.schema.json` | AI analysis job |
 | `analysis_result.example.json` | `worker/analysis_result.v1.schema.json` | AI analysis result |
+| `payment_intent.example.json` | `platform/payment_intent.v2.schema.json` | Payment intent (manual/online) |
 
 ---
 
