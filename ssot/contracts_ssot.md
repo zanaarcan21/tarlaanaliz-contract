@@ -1,5 +1,7 @@
 # Contracts — Component SSOT (Filtered View)
 
+<!-- BOUND:SSOT_CONTRACTS -->
+
 
 ## KR Domain Paketleri İndeksi (Navigasyon)
 
@@ -225,13 +227,12 @@ Aşağıdaki blok, bu bileşende bir KR uygulanırken doldurulacak standart alan
 - **Dataset durumları (enum, zorunlu):**
   - `RAW_INGESTED`, `RAW_SCANNED_EDGE_OK`, `RAW_HASH_SEALED`, `CALIBRATED`, `CALIBRATED_SCANNED_CENTER_OK`,
     `DISPATCHED_TO_WORKER`, `ANALYZED`, `DERIVED_PUBLISHED`, `ARCHIVED`, `REJECTED_QUARANTINE`
-- **Zorunlu şemalar:**
-  - `schemas/edge/dataset_manifest.v1.schema.json`
-  - `schemas/edge/scan_report.v1.schema.json` (AV1/AV2 ortak)
-  - `schemas/edge/verification_report.v1.schema.json` (hash match/mismatch)
-  - `schemas/edge/calibration_result.v1.schema.json` + `schemas/edge/qc_report.v1.schema.json`
-  - `schemas/edge/transfer_batch.v1.schema.json` (chunk/resume)
-  - (platform) `schemas/platform/evidence_bundle_ref.v1.schema.json` (ham değil, referans)
+- **Zorunlu şemalar (bu repodaki mevcut kanonik dosyalar):**
+  - `schemas/edge/intake_manifest.v1.schema.json`
+  - `schemas/edge/quarantine_event.v1.schema.json`
+  - `schemas/platform/calibrated_dataset_manifest.v1.schema.json`
+  - `schemas/platform/calibration_result.v1.schema.json` + `schemas/platform/qc_report.v1.schema.json`
+  - `schemas/worker/analysis_job.v1.schema.json` (yalnızca kalibrasyon+QC hard gate sonrası)
 - **Hard gate:**
   - `analysis_job.v1` yalnızca `CALIBRATED_SCANNED_CENTER_OK` dataset_ref kabul eder.
   - Hash mismatch / AV fail / QC fail → `REJECTED_QUARANTINE`.

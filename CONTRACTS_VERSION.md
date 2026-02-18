@@ -1,12 +1,14 @@
 # Contracts Version Lock
 
+<!-- BOUND:CONTRACTS_VERSION -->
+
 Bu dosya, **tarlaanaliz-contracts** repository'sinin normatif sürüm kilitleme dosyasıdır.
 
 ## 📌 Mevcut Versiyon
 
 ```yaml
 version: 1.0.0
-sha256: PLACEHOLDER_HASH_WILL_BE_GENERATED_BY_TOOLS
+sha256: 67f38af5b8c45712eda35d7d6a64a1a346e464adf4c8aa125b62334e8255731d
 created_at: 2026-01-26T10:00:00Z
 breaking_change: false
 ```
