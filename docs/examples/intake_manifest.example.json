@@ -3,7 +3,7 @@
   "batch_id": "batch_60a7f1b8c9d4e5f6a7b8c9d0",
   "mission_id": "mission_60a7f1b8c9d4e5f6a7b8c9d0",
   "field_id": "field_507f1f77bcf86cd799439011",
-  "kiosk_id": "kiosk_diyarbakir_central_01",
+  "kiosk_id": "kiosk_60a7f1b8c9d4e5f6a7b8c9d0",
   "operator_id": "user_60a7f1b8c9d4e5f6a7b8c9d3",
   "card_id": "SANDISK_32GB_SN987654321",
   "files": [
@@ -85,21 +85,21 @@
       {
         "event_type": "TRANSFERRED",
         "actor": "user_60a7f1b8c9d4e5f6a7b8c9d0",
-        "location": "kiosk_diyarbakir_central_01",
+        "location": "kiosk_60a7f1b8c9d4e5f6a7b8c9d0",
         "timestamp": "2026-06-15T07:55:00Z",
         "notes": "SD card handed to station operator"
       },
       {
         "event_type": "RECEIVED",
         "actor": "user_60a7f1b8c9d4e5f6a7b8c9d3",
-        "location": "kiosk_diyarbakir_central_01",
+        "location": "kiosk_60a7f1b8c9d4e5f6a7b8c9d0",
         "timestamp": "2026-06-15T07:56:00Z",
         "notes": "SD card received and logged"
       },
       {
         "event_type": "VERIFIED",
         "actor": "user_60a7f1b8c9d4e5f6a7b8c9d3",
-        "location": "kiosk_diyarbakir_central_01",
+        "location": "kiosk_60a7f1b8c9d4e5f6a7b8c9d0",
         "timestamp": "2026-06-15T08:00:00Z",
         "notes": "Hash verification completed"
       }

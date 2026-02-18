@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+"""BOUND:TOOLS_READ_CONTRACTS_VERSION"""
 from __future__ import annotations
 import re
 from pathlib import Path
@@ -6,9 +7,9 @@ from pathlib import Path
 def main() -> int:
     p = Path("CONTRACTS_VERSION.md")
     t = p.read_text(encoding="utf-8")
-    m = re.search(r"^semver:\s*(v\d+\.\d+\.\d+)\s*$", t, re.MULTILINE)
+    m = re.search(r"^version:\s*(\d+\.\d+\.\d+)\s*$", t, re.MULTILINE)
     if not m:
-        raise SystemExit("semver not found")
+        raise SystemExit("version not found")
     print(m.group(1))
     return 0
 
