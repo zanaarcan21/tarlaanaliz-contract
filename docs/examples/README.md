@@ -1,5 +1,7 @@
 # TarlaAnaliz Contract Examples
 
+<!-- BOUND:DOCS_EXAMPLES_README -->
+
 > **Validated example payloads** for all major schemas.
 
 ## 📋 Purpose
@@ -40,7 +42,7 @@ All examples are automatically validated against their schemas in CI.
 - ✅ Enum values valid
 - ✅ ID format compliance
 - ✅ No forbidden fields (email/tckn/otp)
-- ✅ KR-002 compliance (8 crops, 7 layers)
+- ✅ KR-002 compliance (9 crops, 7 layers)
 
 ---
 
@@ -54,7 +56,7 @@ All examples are automatically validated against their schemas in CI.
 
 **Key Features:**
 - GeoJSON Polygon boundary
-- GAP crop type (KR-002: 8 crops only)
+- GAP crop type (KR-002: 9 crops only)
 - Turkish address format
 - Season information
 - Area in hectares
@@ -149,10 +151,10 @@ print('✅ Valid!')
 
 All examples comply with KR-002 requirements:
 
-### 8 GAP Crops Only
+### 9 GAP Crops Only
 ```json
 {
-  "crop_type": "COTTON"  // or PISTACHIO, MAIZE, WHEAT, SUNFLOWER, GRAPE, OLIVE, RED_LENTIL
+  "crop_type": "COTTON"  // or PISTACHIO, MAIZE, WHEAT, SUNFLOWER, GRAPE, HAZELNUT, OLIVE, RED_LENTIL
 }
 ```
 
