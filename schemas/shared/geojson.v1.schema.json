@@ -59,7 +59,11 @@
           "description": "Optional bounding box"
         }
       },
-      "required": ["type", "geometry", "properties"],
+      "required": [
+        "type",
+        "geometry",
+        "properties"
+      ],
       "unevaluatedProperties": false
     },
     "FeatureCollection": {
@@ -84,7 +88,10 @@
           "description": "Optional bounding box encompassing all features"
         }
       },
-      "required": ["type", "features"],
+      "required": [
+        "type",
+        "features"
+      ],
       "unevaluatedProperties": false
     },
     "Geometry": {
@@ -113,7 +120,8 @@
         {
           "$ref": "#/$defs/GeometryCollection"
         }
-      ]
+      ],
+      "unevaluatedProperties": false
     },
     "Point": {
       "type": "object",
@@ -132,7 +140,10 @@
           "$ref": "#/$defs/BBox"
         }
       },
-      "required": ["type", "coordinates"],
+      "required": [
+        "type",
+        "coordinates"
+      ],
       "unevaluatedProperties": false
     },
     "LineString": {
@@ -156,7 +167,10 @@
           "$ref": "#/$defs/BBox"
         }
       },
-      "required": ["type", "coordinates"],
+      "required": [
+        "type",
+        "coordinates"
+      ],
       "unevaluatedProperties": false
     },
     "Polygon": {
@@ -185,7 +199,10 @@
           "$ref": "#/$defs/BBox"
         }
       },
-      "required": ["type", "coordinates"],
+      "required": [
+        "type",
+        "coordinates"
+      ],
       "unevaluatedProperties": false
     },
     "MultiPoint": {
@@ -209,7 +226,10 @@
           "$ref": "#/$defs/BBox"
         }
       },
-      "required": ["type", "coordinates"],
+      "required": [
+        "type",
+        "coordinates"
+      ],
       "unevaluatedProperties": false
     },
     "MultiLineString": {
@@ -237,7 +257,10 @@
           "$ref": "#/$defs/BBox"
         }
       },
-      "required": ["type", "coordinates"],
+      "required": [
+        "type",
+        "coordinates"
+      ],
       "unevaluatedProperties": false
     },
     "MultiPolygon": {
@@ -269,7 +292,10 @@
           "$ref": "#/$defs/BBox"
         }
       },
-      "required": ["type", "coordinates"],
+      "required": [
+        "type",
+        "coordinates"
+      ],
       "unevaluatedProperties": false
     },
     "GeometryCollection": {
@@ -293,7 +319,10 @@
           "$ref": "#/$defs/BBox"
         }
       },
-      "required": ["type", "geometries"],
+      "required": [
+        "type",
+        "geometries"
+      ],
       "unevaluatedProperties": false
     },
     "Position": {
@@ -324,5 +353,6 @@
         }
       ]
     }
-  }
+  },
+  "$comment": "BOUND:SCHEMA_GEOJSON_V1"
 }

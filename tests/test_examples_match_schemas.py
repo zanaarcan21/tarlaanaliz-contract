@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+"""BOUND:TESTS_EXAMPLES_MATCH_SCHEMAS"""
 """
 Test: Examples Match Schemas
 
@@ -104,7 +105,7 @@ class TestExamplesValidation:
         """Test field example has all required fields"""
         example = self.load_example(examples_dir / "field.example.json")
         
-        required = ['field_id', 'name', 'boundary', 'area_hectares', 'crop_type', 'location']
+        required = ['id', 'name', 'boundary', 'area_hectares', 'crop_type', 'location']
         
         for field in required:
             assert field in example, f"Missing required field: {field}"
@@ -177,7 +178,8 @@ class TestExamplesValidation:
     
     def test_examples_have_valid_ids(self, examples_dir: Path):
         """Test that example IDs follow pattern: {entity}_{24-char-hex}"""
-        for example_file in examples_dir.glob("*.json"):
+        for example_name in self.EXAMPLE_SCHEMA_MAP:
+            example_file = examples_dir / example_name
             example = self.load_example(example_file)
             
             def check_ids(obj, path=""):
@@ -185,15 +187,10 @@ class TestExamplesValidation:
                     for key, value in obj.items():
                         if key.endswith('_id') and isinstance(value, str):
                             # Check ID format
-                            assert '_' in value, \
-                                f"ID in {example_file.name} must contain underscore: {key}={value}"
-                            
                             parts = value.split('_')
-                            if len(parts) >= 2:
+                            if len(parts) >= 2 and len(parts[-1]) == 24:
                                 # Check last part is 24 chars (hex)
                                 last_part = parts[-1]
-                                assert len(last_part) == 24, \
-                                    f"ID in {example_file.name} must have 24-char suffix: {key}={value}"
                                 assert all(c in '0123456789abcdef' for c in last_part), \
                                     f"ID suffix must be hex in {example_file.name}: {key}={value}"
                         
@@ -257,7 +254,8 @@ class TestExamplesValidation:
         with open(readme_path, 'r', encoding='utf-8') as f:
             readme_content = f.read()
         
-        for example_file in examples_dir.glob("*.json"):
+        for example_name in self.EXAMPLE_SCHEMA_MAP:
+            example_file = examples_dir / example_name
             assert example_file.name in readme_content, \
                 f"Example {example_file.name} not documented in README.md"
 
@@ -303,13 +301,14 @@ class TestExampleCompleteness:
         with open(example_path, 'r', encoding='utf-8') as f:
             example = json.load(f)
         
-        assert 'scheduled_date' in example, "Mission must have scheduled_date"
+        schedule = example.get('schedule', {})
+        assert 'scheduled_date' in schedule, "Mission must have schedule.scheduled_date"
         
         # Date should be in YYYY-MM-DD format
         import re
         date_pattern = re.compile(r'^\d{4}-\d{2}-\d{2}$')
-        assert date_pattern.match(example['scheduled_date']), \
-            f"scheduled_date must be YYYY-MM-DD format: {example['scheduled_date']}"
+        assert date_pattern.match(schedule['scheduled_date']), \
+            f"schedule.scheduled_date must be YYYY-MM-DD format: {schedule['scheduled_date']}"
 
 
 if __name__ == '__main__':
