@@ -1,3 +1,4 @@
+# BOUND:WORKFLOW_CONTRACT_VALIDATION
 name: Contract Validation
 
 on:
@@ -184,12 +185,12 @@ jobs:
           node-version: '20'
           cache: 'npm'
       
-      - name: Install Spectral
-        run: npm install -g @stoplight/spectral-cli
+      - name: Install Node dependencies
+        run: npm install --include=dev --no-fund --no-audit
       
       - name: Lint OpenAPI specs
         run: |
-          spectral lint api/**/*.yaml --fail-severity=warn || echo "OpenAPI linting completed"
+          npm run openapi:validate
         continue-on-error: true
   
   check-forbidden-fields:
