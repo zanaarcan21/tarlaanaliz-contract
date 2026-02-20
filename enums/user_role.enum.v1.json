@@ -1,5 +1,7 @@
 {
-  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://api.tarlaanaliz.com/enums/user_role.enum.v1.json",
+  "$comment": "BOUND:ENUM_USER_ROLE_V1",
   "title": "UserRole",
   "description": "Enumeration of user roles for RBAC (Role-Based Access Control)",
   "type": "string",

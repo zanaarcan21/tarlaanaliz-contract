@@ -1,19 +1,29 @@
 name: Contract Validation
+# BOUND:CI_CONTRACT_VALIDATION
 
 on:
   pull_request:
     branches: [main, develop]
     paths:
       - 'schemas/**'
+      - 'enums/**'
       - 'api/**'
+      - 'docs/examples/**'
+      - 'ssot/**'
       - 'tools/**'
       - 'tests/**'
-      - '.github/workflows/contract_validation.yml'
+      - '.github/workflows/**'
   push:
     branches: [main]
     paths:
       - 'schemas/**'
+      - 'enums/**'
       - 'api/**'
+      - 'docs/examples/**'
+      - 'ssot/**'
+      - 'tools/**'
+      - 'tests/**'
+      - '.github/workflows/**'
 
 jobs:
   validate-schemas:
@@ -117,7 +127,7 @@ jobs:
           else
             echo "has_breaking=false" >> $GITHUB_OUTPUT
           fi
-        continue-on-error: true
+        continue-on-error: false
       
       - name: Generate PR comment
         id: comment
@@ -147,9 +157,8 @@ jobs:
       - name: Check breaking changes
         if: steps.breaking.outputs.has_breaking == 'true'
         run: |
-          echo "::warning::Breaking changes detected! This PR requires MAJOR version bump."
-          echo "::warning::Please ensure this is intentional and coordinated with consumers."
-          # Don't fail - just warn
+          echo "::error::Breaking changes detected! MAJOR version bump + migration artifacts required."
+          exit 1
   
   verify-checksums:
     name: Verify Contract Checksums
@@ -167,8 +176,7 @@ jobs:
       
       - name: Verify checksums
         run: |
-          python3 tools/pin_version.py --verify || echo "No version pinned yet"
-        continue-on-error: true
+          python3 tools/pin_version.py --verify
   
   lint-openapi:
     name: Lint OpenAPI Specs
@@ -189,8 +197,7 @@ jobs:
       
       - name: Lint OpenAPI specs
         run: |
-          spectral lint api/**/*.yaml --fail-severity=warn || echo "OpenAPI linting completed"
-        continue-on-error: true
+          spectral lint api/**/*.yaml --fail-severity=warn
   
   check-forbidden-fields:
     name: Check for Forbidden Fields
@@ -207,9 +214,9 @@ jobs:
           
           echo "Checking for forbidden fields: $FORBIDDEN"
           
-          # Search in schema files
-          if grep -r -i -E "\"($FORBIDDEN)\"" schemas/; then
-            echo "::error::Forbidden fields found in schemas!"
+          # Search in schema + API + examples
+          if grep -r -i -E "\"($FORBIDDEN)\"" schemas/ api/ docs/examples/; then
+            echo "::error::Forbidden fields found in contracts/examples!"
             echo "::error::Per KR-050: NO email, NO TCKN, NO OTP allowed"
             exit 1
           fi
@@ -228,8 +235,8 @@ jobs:
         run: |
           echo "Checking all schemas use Draft 2020-12..."
           
-          # Find schemas not using 2020-12
-          INVALID=$(find schemas -name "*.json" -exec grep -L "draft/2020-12" {} \;)
+          # Find schemas/enums not using 2020-12
+          INVALID=$(find schemas enums -name "*.json" -exec grep -L "draft/2020-12" {} \;)
           
           if [ -n "$INVALID" ]; then
             echo "::error::The following schemas do not use Draft 2020-12:"
