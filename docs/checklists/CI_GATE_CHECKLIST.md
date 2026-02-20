@@ -1,4 +1,5 @@
 # CI Gate Checklist
+<!-- BOUND:CI_GATE_CHECKLIST -->
 
 > **Automated CI/CD validation checks** for contract repository
 
@@ -234,9 +235,9 @@ Checking all schemas use Draft 2020-12...
 
 ### Job: `lint-openapi`
 
-**Tool:** Spectral CLI
+**Tool:** Redocly CLI
 
-**Script:** `spectral lint api/**/*.yaml`
+**Script:** `npm run openapi:validate`
 
 **Checks:**
 - [ ] Valid OpenAPI 3.1 syntax
@@ -260,7 +261,7 @@ No issues found!
 ```
 
 **On Failure:**
-- [ ] Review Spectral errors
+- [ ] Review Redocly errors
 - [ ] Fix OpenAPI issues
 - [ ] Re-run linter locally
 
@@ -421,7 +422,7 @@ grep -L "draft/2020-12" schemas/**/*.json
 python3 tools/pin_version.py --verify
 
 # 7. OpenAPI lint
-spectral lint api/**/*.yaml
+npm run openapi:validate
 ```
 
 ---
